@@ -1,8 +1,9 @@
-import flet as ft
-from flet_route import Params, Basket
+START
+IMPORT flet AS ft
+FROM flet_route IMPORT Params, Basket
 
-CREATE ConfirmEmailPage():
-    MODULE __init__(self):
+CREATE ConfirmEmailPage()
+    MODULE __init__(self)
         SET lock_icon = ft.Image(
             src = "/lock.svg",
             width = 200,
@@ -173,26 +174,26 @@ CREATE ConfirmEmailPage():
             content=self.dialog_text
         )
     
-    MODULE get_view(self, page: ft.Page, params: Params, basket: Basket):
+    MODULE get_view(self, page: ft.Page, params: Params, basket: Basket)
         SET self.basket = basket
         SET self.page = page
-        return self.view
+        RETURN self.view
     
-    MODULE get_code_input(self):
-        return self.code_sent_textfield.value
+    MODULE get_code_input(self)
+        RETURN self.code_sent_textfield.value
     
-    MODULE allow_confirm(self, allow: bool):
+    MODULE allow_confirm(self, allow: bool)
         SET self.confirm_email_button.disabled = (allow == False)
         CALL self.page.update()
     
-    MODULE display_on_dialog(self, title: str, message: str):
+    MODULE display_on_dialog(self, title: str, message: str)
         SET self.warning_dialog.title.value = title
         SET self.dialog_text.value = message
         SET self.page.dialog = self.warning_dialog
         SET self.warning_dialog.open = True
         CALL self.page.update()
     
-    MODULE update_colors(self, colors):
+    MODULE update_colors(self, colors)
         SET self.confirm_email_indicator_text.color = colors["black"]
         SET self.code_sent_indicator_text.color = colors["black"]
         
@@ -220,3 +221,4 @@ CREATE ConfirmEmailPage():
         ]
         
         SET self.view.bgcolor = colors["9a6e32"]
+END
