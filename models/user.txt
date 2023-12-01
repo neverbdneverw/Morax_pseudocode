@@ -1,5 +1,6 @@
-class User:
-    MODULE __init__(self, email: str, first_run: bool, gcash_number: str, password: str, picture_link: str, qr_image_id: str, username: str):
+START
+CREATE class User
+    MODULE __init__(self, email: str, first_run: bool, gcash_number: str, password: str, picture_link: str, qr_image_id: str, username: str)
         SET self._email = email
         SET self._first_run = first_run
         SET self._gcash_number = gcash_number        
@@ -9,53 +10,54 @@ class User:
         SET self._username = username
     
     CALL property
-    MODULE email(self):
-        return self._email
+    MODULE email(self)
+        RETURN self._email
     
     CALL property
-    MODULE first_run(self):
-        return self._first_run
+    MODULE first_run(self)
+        RETURN self._first_run
     
     CALL first_run.setter
-    MODULE first_run(self, first_run: bool):
+    MODULE first_run(self, first_run: bool)
         SET self._first_run = first_run
     
     CALL property
-    MODULE gcash_number(self):
-        return self._gcash_number
+    MODULE gcash_number(self)
+        RETURN self._gcash_number
     
     CALL gcash_number.setter
-    MODULE gcash_number(self, gcash_number: str):
+    MODULE gcash_number(self, gcash_number: str)
         SET self._gcash_number = gcash_number
     
     CALL property
-    MODULE password(self):
-        return self._password
+    MODULE password(self)
+        RETURN self._password
     
     CALL password.setter
-    MODULE password(self, password: str):
+    MODULE password(self, password: str)
         SET self._password = password
     
     CALL property
-    MODULE picture_link(self):
-        return self._picture_link
+    MODULE picture_link(self)
+        RETURN self._picture_link
     
     CALL picture_link.setter
-    MODULE picture_link(self, picture_link: str):
+    MODULE picture_link(self, picture_link: str)
         SET self._picture_link = picture_link
     
     CALL property
-    MODULE qr_image_id(self):
-        return self._qr_image_id
+    MODULE qr_image_id(self)
+        RETURN self._qr_image_id
     
     CALL qr_image_id.setter
-    MODULE qr_image_id(self, qr_image_id: str):
+    MODULE qr_image_id(self, qr_image_id: str)
         SET self._qr_image_id = qr_image_id
     
     CALL property
-    MODULE username(self):
-        return self._username
+    MODULE username(self)
+        RETURN self._username
     
     CALL username.setter
-    MODULE username(self, username: str):
+    MODULE username(self, username: str)
         SET self._username = username
+END
