@@ -35,7 +35,7 @@ MODULE main(page: ft.Page)
 	SET onboarding_page =  OnboardingPage()
 	SET home_page = call HomePage()
 	
-	SET main_pages = [confirm_email_page, opening_page, signup_page, login_page, forgot_password_page, onboarding_page, 		home_page]
+	CREATE LIST main_pages = [confirm_email_page, opening_page, signup_page, login_page, forgot_password_page, onboarding_page, 		home_page]
 
     CREATE LIST app_routes = [
        	 path(url="/", clear=True, view=opening_page.get_view),
@@ -49,6 +49,7 @@ MODULE main(page: ft.Page)
     
     	CALL Routing(page = page, app_routes = app_routes)
    	CALL page.go(page.route)
+
 	MODULE handle_route_changed(event: ft.RouteChangeEvent)
        	 FOR current in main_pages
             IF current.route_address == event.route THEN
@@ -71,21 +72,21 @@ MODULE main(page: ft.Page)
     
     SET model =  Model()
 
-   	CALL HomeController(page, model, home_page)
-    	CALL AddDialogController(page, model, home_page)
-    	CALL ItemInfoDialogController(page, model, home_page)
-    	CALL AddReceivableDialogController(page, model, home_page)
-    	CALL AccountSettingsDialogsController(page, model, home_page)
-    	CALL ReceivableInfoDialogController(page, model, home_page)
-    	CALL OpeningController(page, model, opening_page)
-    	CALL OnboardingController(page, model, onboarding_page)
-   	CALL LoginController(page, model, login_page)
-    	CALL SignupController(page, model, signup_page)
-    	CALL ForgotController(page, model, forgot_password_page)
-    	CALL ConfirmEmailController(page, model, confirm_email_page)
+   	Call HomeController(page, model, home_page)
+    	Call AddDialogController(page, model, home_page)
+    	Call ItemInfoDialogController(page, model, home_page)
+    	Call AddReceivableDialogController(page, model, home_page)
+    	Call AccountSettingsDialogsController(page, model, home_page)
+    	Call ReceivableInfoDialogController(page, model, home_page)
+    	Call OpeningController(page, model, opening_page)
+    	Call OnboardingController(page, model, onboarding_page)
+   	Call LoginController(page, model, login_page)
+    	Call SignupController(page, model, signup_page)
+    	Call ForgotController(page, model, forgot_password_page)
+    	Call ConfirmEmailController(page, model, confirm_email_page)
 
 IF __name__ == "__main__" THEN
-    CALL  ft.app(
+    Call  ft.app(
         target=main,
         assets_dir="assets"
     )
