@@ -1,0 +1,30 @@
+START
+FROM views IMPORT OpeningPage
+IMPORT flet AS ft
+
+CREATE class OpeningController
+    MODULE __init__(self, page: ft.Page, opening_page: OpeningPage)
+        SET self.page = page
+        SET self.opening_page = opening_page
+        
+        ADD self.handle_automatic_login()
+        
+        SET self.opening_page.login_button.on_click = self.login_clicked
+        SET self.opening_page.signup_button.on_click = self.signup_clicked
+        
+    MODULE login_clicked(self, event)
+        ADD self.page.go TO ("/login")
+    
+    MODULE signup_clicked(self, event)
+        ADD self.page.go TO ("/signup")
+    
+    MODULE handle_automatic_login(self)
+        SET automatic_login = self.page.client_storage.get("keep_signed_in")
+        SET email = self.page.client_storage.get("email")
+        
+        IF automatic_login is True and email is not None and email != "" THEN
+            SET self.page.snack_bar = ft.SnackBar(ft.Text(f"You will be automatically logged in."))
+            SET self.page.snack_bar.open = True
+            ADD self.page.update()
+            ADD self.page.go TO ("/home")
+END

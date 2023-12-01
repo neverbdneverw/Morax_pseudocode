@@ -1,0 +1,44 @@
+START
+FROM repository IMPORT Repository
+FROM views IMPORT ForgotPasswordPage
+IMPORT flet AS ft
+
+CREATE class ForgotController
+    MODULE __init__(self, page: ft.Page, repository: Repository, forgot_password_page: ForgotPasswordPage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.forgot_password_page = forgot_password_page
+        
+        SET self.forgot_password_page.new_password_textfield.on_change = self.validate
+        SET self.forgot_password_page.confirm_new_password_textfield.on_change = self.validate
+        SET self.forgot_password_page.email_textfield.on_change = self.validate
+        SET self.forgot_password_page.signup_button.on_click = self.go_to_signup
+        SET self.forgot_password_page.change_password_btn.on_click = self.change_password
+    
+    MODULE validate(self, event)
+        SET verdict = all([
+            self.forgot_password_page.get_email_to_send_entry() != "",
+            self.forgot_password_page.get_new_password_entry() != "",
+            self.forgot_password_page.get_confirm_new_password_entry() != "",
+            self.forgot_password_page.get_new_password_entry() == self.forgot_password_page.get_confirm_new_password_entry()
+        ])
+        
+        IF verdict THEN
+            ADD self.forgot_password_page.allow_password_change TO (True)
+        ELSE
+            ADD self.forgot_password_page.allow_password_change TO (False)
+    
+    MODULE go_to_signup(self, event)
+        ADD self.page.go TO ("/signup")
+    
+    MODULE change_password(self, event)
+        SET code = self.repository.get_email_confirmation_code(self.forgot_password_page.get_email_to_send_entry())
+        CREATE LISTcommand = [
+            "COMMAND_CHANGE_PASSWORD",
+            code,
+            self.forgot_password_page.get_email_to_send_entry(),
+            self.forgot_password_page.get_new_password_entry(),
+        ]
+        SET self.forgot_password_page.basket.command = command
+        ADD self.page.go TO ("/confirm_email")
+END

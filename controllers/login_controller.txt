@@ -1,0 +1,54 @@
+START
+FROM repository IMPORT Repository
+FROM views IMPORT LoginPage
+IMPORT flet AS ft
+
+CREATE class LoginController
+    MODULE __init__(self, page: ft.Page, repository: Repository, login_page: LoginPage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.login_page = login_page
+        
+        SET self.login_page.email_textfield.on_change = self.validate
+        SET self.login_page.password_textfield.on_change = self.validate
+        SET self.login_page.login_btn.on_click = self.login
+        SET self.login_page.forgot_password_btn.on_click = self.forgot_password
+        SET self.login_page.signup_button.on_click = self.go_to_signup
+        SET self.login_page.keep_logged_check.on_change = self.handle_automatic_login
+    
+    MODULE validate(self, event)
+        IF self.login_page.get_email_entry() != "" and self.login_page.get_password_entry() != "" THEN
+            ADD self.login_page.allow_login TO (True)
+        ELSE
+            ADD self.login_page.allow_login TO (False)
+    
+    MODULE login(self, event)
+        SET email = self.login_page.get_email_entry().replace(".", ",")
+        SET password = self.login_page.get_password_entry()
+        
+        FOR user IN self.repository.users
+            IF user.email == email and user.password == password THEN
+                ADD self.page.client_storage.set TO ("email", email)
+                IF user.first_run THEN
+                    ADD self.page.go TO ("/onboarding")
+                ELSE
+                    ADD self.page.go TO ("/home")
+                
+                RETURN
+            ELSE IF user.email == email and user.password != password THEN
+                ADD self.login_page.display_on_dialog TO ("Password is wrong. Please Try Again.")
+                RETURN
+        
+        ADD self.login_page.display_on_dialog("Username or Password might be wrong. Please Try Again.")
+    
+    MODULE handle_automatic_login(self, event)
+        SET setting = self.login_page.get_keep_signed_in()
+        ADD self.page.client_storage.set TO ("keep_signed_in", setting)
+        ADD self.page.client_storage.set TO ("recent_set_keep_signed_in", setting)
+    
+    MODULE go_to_signup(self, event)
+        ADD self.page.go TO ("/signup")
+    
+    MODULE forgot_password(self, event)
+        ADD self.page.go TO ("/forgot_password")
+END

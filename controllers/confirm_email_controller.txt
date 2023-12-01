@@ -1,0 +1,71 @@
+FROM models IMPORT User
+FROM repository IMPORT Repository
+FROM views IMPORT ConfirmEmailPage
+IMPORT flet AS ft
+
+CREATE class ConfirmEmailController
+    MODULE __init__(self, page: ft.Page, repository: Repository, confirm_email_page: ConfirmEmailPage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.confirm_email_page = confirm_email_page
+        
+        SET self.confirm_email_page.code_sent_textfield.on_change = self.validate
+        SET self.confirm_email_page.login_button.on_click = self.go_to_login
+        SET self.confirm_email_page.confirm_email_button.on_click = self.confirm_email
+    
+    MODULE validate(self, event)
+        IF self.confirm_email_page.get_code_input() != "" THEN
+            ADD self.confirm_email_page.allow_confirm TO (True)
+        ELSE
+            ADD self.confirm_email_page.allow_confirm TO (False)
+    
+    MODULE go_to_login(self, event)
+        ADD self.page.go TO ("/login")
+    
+    MODULE confirm_email(self, event)
+        SET argument_list = list(self.confirm_email_page.basket.command)
+        SET command_type = argument_list[0]
+        SET code = argument_list[1]
+        IF code == int(self.confirm_email_page.code_sent_textfield.value) THEN 
+            IF command_type == "COMMAND_REGISTER" THEN
+                ADD self.register TO (argument_list)
+            ELSE IF command_type == "COMMAND_CHANGE_PASSWORD" THEN
+                ADD self.change_password TO (argument_list)
+            ELSE 
+                DISPLAY self.confirm_email_page.display_on_dialog("Can't Do operation", "The process to be done is not expected.")
+        ELSE
+            IF command_type == "COMMAND_REGISTER" THEN 
+                DISPLAY self.confirm_email_page.display_on_dialog("Can't Register", "The code sent must match the entered code.")
+            ELSE IF command_type == "COMMAND_CHANGE_PASSWORD" THEN
+                DISPLAY self.confirm_email_page.display_on_dialog("Can't Change Password", "The code sent must match the entered code.")
+    
+    MODULE register(self, argument_list: list) 
+        FOR user IN self.repository.users
+            IF user.email == str(argument_list[2]).replace(".", ",") THEN
+                DISPLAY self.confirm_email_page.display_on_dialog("Can't Register", "An account is already linked to the credentials given.")
+                RETURN
+
+        SET new_user = User(
+            email=str(argument_list[2]).replace(".", ","),
+            first_run=True,
+            gcash_number="",
+            password=argument_list[4],
+            picture_link="",
+            qr_image_id="",
+            username=argument_list[3]
+        )
+
+        ADD self.repository.update_user TO (new_user)
+        DISPLAY self.confirm_email_page.display_on_dialog("Success!", "Your account has been created. You may now log in.")
+    
+    MODULE change_password(self, argument_list: list)
+        FOR user IN self.repository.users
+            IF user.email == str(argument_list[2]).replace(".", ",") THEN
+                SET user.password = argument_list[3]
+                ADD self.repository.update_user TO (user)
+                
+                SET self.confirm_email_page.display_on_dialog("Success!", "Your password has been updated. You may now log in again.")
+                RETURN
+
+        DISPLAY self.confirm_email_page.display_on_dialog("Can't Change Password", "An account bound to the email doesn't exist.")
+END

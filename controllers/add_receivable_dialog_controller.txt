@@ -1,0 +1,113 @@
+START
+FROM models IMPORT Transaction
+FROM repository IMPORT Repository, utils
+FROM views IMPORT HomePage, AddReceivableDialog
+
+IMPORT flet AS ft
+FROM PIL IMPORT Image
+IMPORT io
+IMPORT base64
+
+CREATE class AddReceivableDialogController
+    SET image_path = ""
+    MODULE __init__(self, page: ft.Page, repository: Repository, home_page: HomePage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.home_page = home_page
+        CREATE self.add_receivable_dialog: SET AddReceivableDialog = home_page.add_receivable_dialog
+        
+        SET self.file_picker = ft.FilePicker()
+        SET self.file_picker.on_result = self.set_item_image
+        ADD self.page.overlay.append(self.file_picker)
+        ADD self.page.update()
+        
+        SET self.add_receivable_dialog.choose_button.on_click = self.open_chooser
+        
+        SET self.add_receivable_dialog.cancel_button.on_click = self.home_page.close_dialog
+        
+        SET self.add_receivable_dialog.item_name_textfield.on_change = self.item_info_change
+        SET self.add_receivable_dialog.item_month_textfield.on_change = self.item_info_change
+        SET self.add_receivable_dialog.item_day_textfield.on_change = self.item_info_change
+        SET self.add_receivable_dialog.item_year_textfield.on_change = self.item_info_change
+        SET self.add_receivable_dialog.item_amount_textfield.on_change = self.item_info_change
+        SET self.add_receivable_dialog.item_description_textfield.on_change = self.item_info_change
+        
+        SET self.add_receivable_dialog.add_item_button.on_click = self.add_receivable
+    
+    MODULE open_chooser(self, event: ft.ControlEvent)
+        ADD self.file_picker.pick_files("Choose Item Image", allowed_extensions = ["png", "jpg", "jpeg", "PNG", "JPG"], file_type = ft.FilePickerFileType.CUSTOM)
+    
+    MODULE set_item_image(self, event: ft.FilePickerResultEvent)
+        IF event.files is not None THEN
+            SET self.image_path = event.files[0].path
+            SET image = Image.open(self.image_path).convert("RGBA")
+            SET pil_img = image.resize((200, 200))
+            SET buff = io.BytesIO()
+            ADD pil_img.save TO (buff, format="PNG")
+            
+            SET self.new_image_string = base64.b64encode(buff.getvalue()).decode("utf-8")
+            SET self.add_receivable_dialog.item_image.src_base64 = self.new_image_string
+            ADD self.add_receivable_dialog.item_image.update()
+        ELSE
+            SET self.image_path = ""
+
+    MODULE add_receivable(self, event: ft.ControlEvent)
+        CREATE email: SET str = self.page.client_storage.get("email")
+        SET group_name = self.add_receivable_dialog.group
+        SET item_name = self.add_receivable_dialog.get_item_name()
+        SET item_month = self.add_receivable_dialog.get_item_creation_month()
+        SET item_day = self.add_receivable_dialog.get_item_creation_day()
+        SET item_year = self.add_receivable_dialog.get_item_creation_year()
+        SET item_date = f"{item_month} {item_day}, {item_year}"
+        SET item_amount = self.add_receivable_dialog.get_item_amount()
+        SET item_description = self.add_receivable_dialog.get_item_description()
+        
+        SET image_bytes = io.BytesIO()
+        SET image = Image.open(self.image_path).convert("RGBA")
+        SET image = image.resize((200, 200))
+        ADD image.save TO (image_bytes, format="PNG")
+        
+        SET receivable_image_id = self.repository.upload_image(f"{group_name}|{item_name}.png", image_bytes)
+        
+        SET new_transaction = Transaction(
+            name=item_name,
+            description=item_description,
+            image_id=receivable_image_id,
+            paid_by="None",
+            posted_by=email.replace(".", ","),
+            price=item_amount,
+            time_created=item_date
+        )
+        
+        FOR group IN self.repository.groups
+            IF group.group_name == group_name THEN
+                ADD group.transactions.append TO (new_transaction)
+                ADD self.repository.update_group TO (group)
+                ADD self.home_page.close_dialog TO (event)
+                
+                ADD self.repository.update_refs()
+                ADD self.home_page.group_listview.items_view.on_trigger_reload TO (event)
+                
+                BREAK
+    
+    MODULE item_info_change(self, event: ft.ControlEvent)
+        TRY
+            IF all([self.add_receivable_dialog.get_item_name() != "",
+                    self.add_receivable_dialog.get_item_creation_month() != "",
+                    self.add_receivable_dialog.get_item_creation_day() != "",
+                    self.add_receivable_dialog.get_item_creation_year() != "",
+                    self.add_receivable_dialog.get_item_amount() != "",
+                    self.add_receivable_dialog.get_item_description() != "",
+                    self.add_receivable_dialog.get_item_creation_month() in utils.accepted_months,
+                    int(self.add_receivable_dialog.get_item_creation_day()) in range(0, 32),
+                    int(self.add_receivable_dialog.get_item_creation_year()) in range(2000, 2024),
+                    float(self.add_receivable_dialog.get_item_amount())]) THEN
+                
+                SET self.add_receivable_dialog.add_item_button.disabled = False
+            ELSE
+                SET self.add_receivable_dialog.add_item_button.disabled = True
+            ADD self.add_receivable_dialog.update()
+        EXCEPT
+            SET self.add_receivable_dialog.add_item_button.disabled = True
+            ADD self.add_receivable_dialog.add_item_button.update()
+END

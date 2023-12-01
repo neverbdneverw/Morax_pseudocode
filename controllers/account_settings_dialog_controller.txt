@@ -1,0 +1,233 @@
+START
+FROM views IMPORT HomePage, ProfilePictureChangeDialog, EditGcashDialog, EditUsernameDialog, EditPasswordDialog, AccountView
+FROM repository IMPORT Repository, utils, get_colors
+
+FROM PIL IMPORT Image
+FROM io IMPORT BytesIO
+IMPORT flet AS ft
+IMPORT base64
+IMPORT cv2
+IMPORT qrcode
+
+CREATE class AccountSettingsDialogsController
+    MODULE __init__(self, page: ft.Page, repository: Repository, home_page: HomePage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.home_page = home_page
+        
+        SET self.change_dp_dialog: ProfilePictureChangeDialog = home_page.change_profile_picture_dialog
+        SET self.change_gcash_dialog: EditGcashDialog = home_page.edit_gcash_dialog
+        SET self.change_username_dialog: EditUsernameDialog = home_page.edit_username_dialog
+        SET self.change_password_dialog: EditPasswordDialog = home_page.edit_password_dialog
+        
+        CREATE self.account_view: SET AccountView = home_page.account_view
+        
+        CREATE self.email: str = SET self.page.client_storage.get("email")
+        
+        SET self.qr_picker = ft.FilePicker()
+        SET self.qr_picker.on_result = self.set_qr_image
+        ADD self.page.overlay.append TO (self.qr_picker)
+        ADD self.page.update()
+        
+        SET self.dp_picker = ft.FilePicker()
+        SET self.dp_picker.on_result = self.set_dp_image
+        ADD self.page.overlay.append TO (self.dp_picker)
+        ADD self.page.update()
+        
+        SET self.gcash_changed = self.handle_save_changes_button
+        
+        SET self.account_view.change_user_picture_button.on_click = self.show_dp_change_dialog
+        SET self.account_view.edit_profile_button.on_click = lambda e: self.home_page.show_edit_username_dialog()
+        SET self.account_view.change_password_button.on_click = lambda e: self.home_page.show_edit_password_dialog()
+        SET self.account_view.gcash_button.on_click = self.show_change_gcash_dialog
+        
+        SET self.change_dp_dialog.cancel_button.on_click = lambda e: self.home_page.close_dialog(e)
+        SET self.change_username_dialog.cancel_button.on_click = lambda e: self.home_page.close_dialog(e)
+        SET self.change_password_dialog.cancel_button.on_click = lambda e: self.home_page.close_dialog(e)
+        SET self.change_gcash_dialog.cancel_button.on_click = lambda e: self.home_page.close_dialog(e)
+        
+        SET self.change_dp_dialog.upload_profile.on_click = self.open_profile_image_chooser
+        SET self.change_dp_dialog.save_changes_button.on_click = self.save_changed_dp
+        
+        SET self.change_username_dialog.new_username_textfield.on_change = self.handle_username_change
+        SET self.change_username_dialog.save_changes_button.on_click = self.save_changed_username
+        
+        SET self.change_password_dialog.new_password_textfield.on_change = self.handle_password_change
+        SET self.change_password_dialog.reenter_password_textfield.on_change = self.handle_password_change
+        SET self.change_password_dialog.save_changes_button.on_click = self.save_changed_password
+        
+        SET self.change_gcash_dialog.upload_qr_button.on_click = self.open_qr_chooser
+        SET self.change_gcash_dialog.save_changes_button.on_click = self.save_changed_gcash_infos
+    
+    MODULE show_change_gcash_dialog(self, event: ft.ControlEvent)
+        SET colors = get_colors(self.page.client_storage.get("dark_mode"))
+        ADD self.change_gcash_dialog.update_colors TO (colors)
+        
+        FOR user IN self.repository.users
+            IF user.email == self.email.replace(".", ",") THEN
+                SET self.change_gcash_dialog.number_textfield.value = user.gcash_number
+                SET image_bytes = self.repository.download_image(user.qr_image_id)
+                SET self.change_gcash_dialog.qr_image.src_base64 = utils.convert_to_base64(image_bytes)       
+
+        ADD self.home_page.show_change_gcash_qr_dialog()
+    
+    MODULE handle_username_change(self, event: ft.ControlEvent)
+        IF self.change_username_dialog.new_username_textfield.value != "" THEN
+            SET self.change_username_dialog.save_changes_button.disabled = False
+            ADD self.change_username_dialog.save_changes_button.update()
+        ELSE 
+            SET self.change_username_dialog.save_changes_button.disabled = True
+            ADD self.change_username_dialog.save_changes_button.update()
+    
+    MODULE handle_password_change(self, event: ft.ControlEvent)
+        SET password = self.change_password_dialog.new_password_textfield.value
+        SET confirm = self.change_password_dialog.reenter_password_textfield.value
+        
+        IF password != "" and confirm != "" and password == confirm THEN
+            SET self.change_password_dialog.save_changes_button.disabled = False
+            ADD self.change_password_dialog.save_changes_button.update()
+        ELSE
+            SET self.change_password_dialog.save_changes_button.disabled = True
+            ADD self.change_password_dialog.save_changes_button.update()
+    
+    MODULE show_dp_change_dialog(self, event: ft.ControlEvent)
+        SET image_string = self.account_view.user_picture.src_base64
+        SET self.change_dp_dialog.user_image.src_base64 = image_string
+        ADD self.home_page.show_profile_picture_change_dialog()
+    
+    MODULE open_profile_image_chooser(self, event)
+        ADD self.dp_picker.pick_files TO ("Choose a User Image", allowed_extensions = ["png", "jpg", "jpeg", "PNG", "JPG"], file_type = ft.FilePickerFileType.CUSTOM)
+    
+    MODULE open_qr_chooser(self, event)
+        ADD self.qr_picker.pick_files TO ("Choose GCash QR Code Image", allowed_extensions = ["png", "jpg", "jpeg", "PNG", "JPG"], file_type = ft.FilePickerFileType.CUSTOM)
+
+    MODULE set_dp_image(self, event: ft.FilePickerResultEvent)
+        IF event.files is not None THEN
+            SET self.dp_image_path = event.files[0].path
+            SET image = Image.open(self.dp_image_path).convert("RGBA")
+            SET pil_img = image.resize((200, 200))
+            SET self.dp_image_buffer = BytesIO()
+            ADD pil_img.save TO (self.dp_image_buffer, format="PNG")
+            
+            SET self.dp_image_string = base64.b64encode(self.dp_image_buffer.getvalue()).decode("utf-8")
+            SET self.change_dp_dialog.user_image.src_base64 = self.dp_image_string
+            ADD self.change_dp_dialog.user_image.update()
+            SET self.change_dp_dialog.save_changes_button.disabled = False
+            ADD self.change_dp_dialog.save_changes_button.update()
+        ELSE
+            SET self.dp_image_path = ""
+            SET self.change_dp_dialog.save_changes_button.disabled = True
+            ADD self.change_dp_dialog.save_changes_button.update()
+    
+    MODULE save_changed_dp(self, event: ft.ControlEvent)
+        IF self.dp_image_path != "" THEN
+            FOR user IN self.repository.users
+                IF user.email == self.email.replace(".", ",") THEN
+                    SET id = self.repository.upload_image(f"{user.email}|DP.png", self.dp_image_buffer)
+                    SET user.picture_link = id
+                    
+                    ADD self.repository.update_user(user)
+                    
+                    ADD self.home_page.trigger_reload_account_view()
+                    ADD self.account_view.user_picture.update()
+                    ADD self.account_view.username_text.update()
+                    ADD self.account_view.email_text.update()
+                    
+                    ADD self.home_page.close_dialog(event)
+                    
+                    SET self.page.snack_bar = ft.SnackBar(ft.Text("Profile Picture has been changed. Please wait for changes to take effect..."))
+                    SET self.page.snack_bar.open = True
+                    ADD self.page.update()
+                    
+                    RETURN
+    
+    MODULE save_changed_username(self, event: ft.ControlEvent)
+        SET replacement = self.change_username_dialog.new_username_textfield.value
+        FOR user IN self.repository.users
+            IF user.email == self.email.replace(".", ",") THEN
+                DECLARE user.username = replacement
+                ADD self.repository.update_user TO (user)
+                ADD self.home_page.trigger_reload_account_view()
+                SET self.home_page.group_listview.top_text.value = f"Hello, {replacement}!"
+                ADD self.home_page.group_listview.top_text.update()
+                ADD self.account_view.user_picture.update()
+                ADD self.account_view.username_text.update()
+                ADD self.account_view.email_text.update()
+                
+                ADD self.home_page.close_dialog TO (event)
+                
+                return
+    
+    MODULE save_changed_password(self, event: ft.ControlEvent)
+        SET password = self.change_password_dialog.new_password_textfield.value
+        
+        FOR user IN self.repository.users
+            IF user.email == self.email.replace(".", ",") THEN
+                SET user.password = password
+                ADD self.repository.update_user TO (user)
+                
+                ADD self.home_page.close_dialog TO (event)
+                
+                SET text = ft.Text("Your password has been successfully changed.")
+                SET self.page.snack_bar = ft.SnackBar(text, duration=3000)
+                SET self.page.snack_bar.open = True
+                ADD self.page.update()
+                
+                RETURN
+    
+    MODULE set_qr_image(self, event: ft.FilePickerResultEvent)
+        IF event.files is not None THEN
+            SET self.qr_image_path = event.files[0].path
+            SET image = cv2.imread(self.qr_image_path)
+            SET detector = cv2.QRCodeDetector()
+            SET data, _, _ = detector.detectAndDecode(image)
+            
+            IF data == "" or data == None THEN
+                SET self.gcash_qr_base64 = ""
+                SET self.page.snack_bar = ft.SnackBar(ft.Text("The QR Code image is invalid"), duration=3000)
+                SET self.page.snack_bar.open = True
+                ADD self.page.update()
+                RETURN
+            
+            SET qr = qrcode.QRCode(
+                version = 1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size = 10,
+                border = 4
+            )
+            
+            ADD qr.add_data TO (data)
+            ADD qr.make TO (fit=True)
+            SET image = qr.make_image()
+            SET self.qr_buffer = BytesIO()
+            ADD image.save TO (self.qr_buffer, format="JPEG")
+            SET self.gcash_qr_base64 = base64.b64encode(self.qr_buffer.getvalue()).decode("utf-8")
+            SET self.change_gcash_dialog.qr_image.src_base64 = self.gcash_qr_base64
+            ADD self.change_gcash_dialog.qr_image.update()
+            ADD self.gcash_changed()
+        ELSE
+            SET self.qr_image_path = ""
+    
+    MODULE gcash_changed(self)
+        PASS
+
+    MODULE handle_save_changes_button(self)
+        IF self.gcash_qr_base64 != "" and len(self.change_gcash_dialog.number_textfield.value) == 11 and (self.change_gcash_dialog.number_textfield.value[:2] == "09" or self.change_gcash_dialog.number_textfield.value[:3] == "639") THEN
+            SET self.change_gcash_dialog.save_changes_button.disabled = False
+            ADD self.change_gcash_dialog.save_changes_button.update()
+        ELSE
+            SET self.change_gcash_dialog.save_changes_button.disabled = True
+            ADD self.change_gcash_dialog.save_changes_button.update()
+    
+    MODULE save_changed_gcash_infos(self, event: ft.ControlEvent)
+        FOR user IN self.repository.users
+            IF user.email == self.email.replace(".", ",") THEN
+                SET id = self.repository.upload_image(f"{user.email}|QRCode.png", self.qr_buffer)
+                SET user.qr_image_id = id
+                SET user.gcash_number = self.change_gcash_dialog.number_textfield.value
+                ADD self.repository.update_user TO (user)
+                ADD self.home_page.close_dialog TO (event)
+                
+                RETURN
+END
+        

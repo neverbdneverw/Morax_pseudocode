@@ -1,0 +1,45 @@
+START
+FROM models IMPORT Transaction
+FROM repository IMPORT Repository
+FROM views IMPORT HomePage, ShowReceivableInfoDialog
+FROM PIL IMPORT Image, ImageTk
+
+IMPORT flet AS ft
+IMPORT tkinter AS tk
+
+CREATE class ReceivableInfoDialogController
+    MODULE __init__(self, page: ft.Page, repository: Repository, home_page: HomePage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.home_page = home_page
+        SET self.receivable_info_dialog: ShowReceivableInfoDialog = home_page.receivable_info_dialog
+        
+        SET self.receivable_info_dialog.completed_button.on_click = self.mark_receivable_completed
+        SET self.receivable_info_dialog.cancel_button.on_click = lambda e: self.home_page.close_dialog(e)
+        SET self.receivable_info_dialog.show_proof = self.show_proof
+    
+    MODULE mark_receivable_completed(self, event: ft.ControlEvent)
+        SET item_name = self.receivable_info_dialog.title.value
+        SET group_name = self.receivable_info_dialog.group_name
+        
+        FOR group IN self.repository.groups
+            IF group.group_name == group_name THEN
+                CREATE transaction: SET Transaction = None
+                FOR transaction IN group.transactions
+                    IF transaction.name == item_name THEN
+                        ADD self.repository.delete_transaction TO (group_name, transaction)
+        
+        ADD self.home_page.close_dialog TO (event)
+        ADD self.home_page.group_listview.items_view.on_trigger_reload TO (event)
+    
+    MODULE show_proof(self, picture_id: str)
+        SET image = self.repository.download_image(picture_id)
+        
+        SET root = tk.Tk()
+        ADD root.title TO ("PROOF OF PAYMENT")
+        SET photo = ImageTk.PhotoImage(Image.open(image))
+        SET label = tk.Label(root, image=photo)
+        SET label.image = photo
+        ADD label.pack TO (ipadx= 20, pady=20)
+        ADD root.mainloop()
+END

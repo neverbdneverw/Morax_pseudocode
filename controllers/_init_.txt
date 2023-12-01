@@ -1,0 +1,15 @@
+START
+FROM .opening_controller IMPORT OpeningController
+FROM .login_controller IMPORT LoginController
+FROM .signup_controller IMPORT SignupController
+FROM .forgot_controller IMPORT ForgotController
+FROM .confirm_email_controller IMPORT ConfirmEmailController
+FROM .home_controller IMPORT HomeController
+FROM .add_dialog_controller IMPORT AddDialogController
+FROM .item_info_dialog_controller IMPORT ItemInfoDialogController
+FROM .add_receivable_dialog_controller IMPORT AddReceivableDialogController
+FROM .onboarding_page_controller IMPORT OnboardingController
+FROM .account_settings_dialogs_controller IMPORT AccountSettingsDialogsController
+FROM .receivable_info_dialog_controller IMPORT ReceivableInfoDialogController
+FROM .settings_view_dialog_controller IMPORT *
+END

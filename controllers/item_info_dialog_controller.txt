@@ -1,0 +1,98 @@
+START
+FROM models IMPORT Transaction
+FROM repository IMPORT Repository
+FROM views IMPORT HomePage
+
+FROM PIL IMPORT Image
+
+IMPORT flet AS ft
+IMPORT io
+IMPORT base64
+
+CREATE class ItemInfoDialogController
+    SET image_path = ""
+    MODULE __init__(self, page: ft.Page, repository: Repository, home_page: HomePage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.home_page = home_page
+        SET self.item_info_dialog = home_page.item_infos_dialog
+        
+        SET self.file_picker = ft.FilePicker()
+        SET self.file_picker.on_result = self.set_proof_image
+        ADD self.page.overlay.append TO (self.file_picker)
+        ADD self.page.update()
+        
+        SET self.item_info_dialog.upload_proof_button.on_click = self.open_chooser
+        
+        SET self.item_info_dialog.cancel_button.on_click = self.reset_button_states
+        SET self.item_info_dialog.pay_button.on_click = self.show_payment_details
+    
+    MODULE reset_button_states(self, event: ft.ControlEvent)
+        SET self.item_info_dialog.pay_button.disabled = False
+        ADD self.item_info_dialog.pay_button.update()
+        ADD self.home_page.close_dialog TO (event)
+    
+    MODULE open_chooser(self, event: ft.ControlEvent)
+        ADD self.file_picker.pick_files TO ("Choose Image proof", allowed_extensions = ["png", "jpg", "jpeg", "PNG", "JPG"], file_type = ft.FilePickerFileType.CUSTOM)
+    
+    MODULE show_payment_details(self, event: ft.ControlEvent)
+        IF self.item_info_dialog.switcher.content == self.item_info_dialog.main_row THEN
+            ADD self.item_info_dialog.show_payment_details()
+            SET self.item_info_dialog.pay_button.text = "Mark as paid"
+            ADD self.item_info_dialog.pay_button.update()
+        ELSE IF self.item_info_dialog.switcher.content == self.item_info_dialog.payment_row THEN
+            SET self.item_info_dialog.switcher.content = self.item_info_dialog.proof_column
+            SET self.item_info_dialog.switcher.update()
+            SET self.item_info_dialog.pay_button.disabled = True
+            SET self.item_info_dialog.pay_button.update()
+        ELSE
+            SET group_name = self.item_info_dialog.group_name
+            SET current_email = self.page.client_storage.get("email")
+            SET item_name = self.item_info_dialog.item_name.value
+            
+            SET self.item_info_dialog.open = False
+            ADD self.page.update()
+            
+            SET image_bytes = io.BytesIO()
+            SET image = Image.open(self.image_path).convert("RGBA")
+            SET image = image.resize((200, 200))
+            ADD image.save TO (image_bytes, format="PNG")
+            
+            DECLARE paid_proof_id = self.repository.upload_image(f"PROOF|{group_name}|{item_name}.png", image_bytes)
+            
+            FOR group IN self.repository.groups
+                IF group.group_name == group_name THEN
+                    CREATE transaction: SET Transaction = None
+                    FOR transaction IN group.transactions
+                        IF transaction.name == item_name THEN
+                            ADD list TO (transaction.paid_by).append((current_email, paid_proof_id))
+                            
+                            IF type(transaction.paid_by) is list THEN
+                                ADD transaction.paid_by.append TO (set(current_email, paid_proof_id))
+                            ELSE
+                                DECLARE transaction.paid_by = [(current_email, paid_proof_id)]
+                            
+                            ADD self.repository.update_group TO (group)
+                            SET self.page.snack_bar = ft.SnackBar(ft.Text(f"Your payable is marked as paid."), duration=1000)
+                            SET self.page.snack_bar.open = True
+
+                            ADD self.home_page.group_listview.items_view.on_trigger_reload TO (event)
+                            
+                            RETURN
+    
+    MODULE set_proof_image(self, event: ft.FilePickerResultEvent)
+        IF event.files is not None THEN
+            SET self.image_path = event.files[0].path
+            SET image = Image.open(self.image_path).convert("RGBA")
+            SET pil_img = image.resize((200, 200))
+            ET buff = io.BytesIO()
+            ADD pil_img.save TO (buff, format="PNG")
+            
+            SET self.new_image_string = base64.b64encode(buff.getvalue()).decode("utf-8")
+            SET self.item_info_dialog.payment_preview_image.src_base64 = self.new_image_string
+            ADD self.item_info_dialog.payment_preview_image.update()
+            SET self.item_info_dialog.pay_button.disabled = False
+            ADD self.item_info_dialog.pay_button.update()
+        ELSE
+            DECLARE self.image_path = ""
+END

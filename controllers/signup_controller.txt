@@ -1,0 +1,49 @@
+START
+FROM repository IMPORT Repository
+FROM views IMPORT SignupPage
+IMPORT flet AS ft
+
+CREATE class SignupController:
+    MODULE __init__(self, page: ft.Page, repository: Repository, signup_page: SignupPage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.signup_page = signup_page
+        
+        SET self.signup_page.email_textfield.on_change = self.validate
+        SET self.signup_page.username_textfield.on_change = self.validate
+        SET self.signup_page.password_textfield.on_change = self.validate
+        SET self.signup_page.confirm_password_textfield.on_change = self.validate
+        SET self.signup_page.agree_eula_check.on_change = self.validate
+        SET self.signup_page.login_button.on_click = self.go_to_login
+        SET self.signup_page.register_btn.on_click = self.register
+    
+    MODULE validate(self, event)
+        SET verdict = all([
+            self.signup_page.get_email_entry() != "",
+            self.signup_page.get_username_entry() != "",
+            self.signup_page.get_password_entry() != "",
+            self.signup_page.get_confirm_password_entry() != "",
+            self.signup_page.get_agree_eula_entry(),
+            self.signup_page.get_password_entry() == self.signup_page.get_confirm_password_entry()
+        ])
+        
+        IF verdict is True THEN
+            ADD self.signup_page.allow_register TO (True)
+        ELSE
+            ADD self.signup_page.allow_register TO (False)
+    
+    MODULE register(self, event)
+        SET code = self.repository.get_email_confirmation_code(self.signup_page.get_email_entry())
+        SET command = [
+            "COMMAND_REGISTER",
+            code,
+            self.signup_page.get_email_entry(),
+            self.signup_page.get_username_entry(),
+            self.signup_page.get_password_entry(),
+        ]
+        SET self.signup_page.basket.command = command
+        ADD self.page.go TO ("/confirm_email")
+    
+    MODULE go_to_login(self, event)
+        ADD self.page.go TO ("/login")
+END

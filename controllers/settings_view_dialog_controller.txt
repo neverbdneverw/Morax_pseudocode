@@ -1,0 +1,58 @@
+START
+IMPORT flet AS ft
+
+FROM repository IMPORT Repository, get_colors
+FROM views IMPORT HomePage
+
+CREATE class AppearanceDialogController
+    MODULE __init__(self, page: ft.Page, repository: Repository, home_page: HomePage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.home_page = home_page
+        SET self.appearance_dialog = home_page.appearance_dialog
+        
+        SET self.home_page.settings_view.appearance_setting.on_click = self.handle_dialog_open
+        
+        SET self.appearance_dialog.on_change = self.change_darkmode
+    
+    MODULE change_darkmode(self, event: ft.ControlEvent)
+        IF event.data == "true" THEN
+            ADD self.page.client_storage.set TO ("dark_mode", True)
+            SET self.page.theme_mode = ft.ThemeMode.DARK
+        ELSE
+            ADD self.page.client_storage.set TO ("dark_mode", False)
+            SET self.page.theme_mode = ft.ThemeMode.LIGHT
+        
+        ADD self.home_page.reapply_theme()
+        SET self.page.snack_bar = ft.SnackBar(ft.Text("App restart is required for the change to fully take effect..."))
+        SET self.page.snack_bar.open = True
+        ADD self.page.update()
+    
+    MODULE handle_dialog_open(self, event)
+        SET colors = get_colors(self.page.client_storage.get("dark_mode"))
+        ADD self.appearance_dialog.update_colors TO (colors)
+        SET self.appearance_dialog.dark_mode_switch.value = bool(self.page.client_storage.get("dark_mode"))
+        ADD self.home_page.show_appearance_dialog()
+
+CREATE class CurrencyDialogController
+    MODULE __init__(self, page: ft.Page, repository: Repository, home_page: HomePage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.home_page = home_page
+        SET self.currency_dialog = home_page.currency_dialog
+        
+        SET self.home_page.settings_view.currency_setting.on_click = self.handle_dialog_open
+        SET self.currency_dialog.on_change = self.change_currency
+    
+    MODULE change_currency(self, currency)
+        ADD self.page.client_storage.set TO ("currency", currency)
+        SET self.page.snack_bar = ft.SnackBar(ft.Text("A reload inside group view is required for the change to take effect..."))
+        SET self.page.snack_bar.open = True
+        ADD self.page.update()
+    
+    MODULE handle_dialog_open(self, event: ft.ControlEvent)
+        SET colors = get_colors(self.page.client_storage.get("dark_mode"))
+        ADD self.currency_dialog.update_colors TO (colors)
+        SET self.currency_dialog.currency_choices.value = self.page.client_storage.get("currency")
+        ADD self.home_page.show_currency_dialog()
+END

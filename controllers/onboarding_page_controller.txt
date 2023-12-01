@@ -1,0 +1,146 @@
+START
+FROM models IMPORT User
+FROM repository IMPORT Repository
+FROM views IMPORT OnboardingPage
+
+FROM io IMPORT BytesIO
+FROM PIL IMPORT Image
+
+IMPORT flet AS ft
+IMPORT qrcode
+IMPORT cv2
+IMPORT base64
+
+CREATE class OnboardingController
+    MODULE __init__(self, page: ft.Page, repository: Repository, onboarding_page: OnboardingPage)
+        SET self.page = page
+        SET self.repository = repository
+        SET self.onboarding_page = onboarding_page
+        
+        SET self.current = 0
+        SET self.gcash_qr_base64 = ""
+        
+        SET self.qr_picker = ft.FilePicker()
+        SET self.qr_picker.on_result = self.set_qr_image
+        ADD self.page.overlay.append TO (self.qr_picker)
+        ADD self.page.update()
+        
+        SET self.dp_picker = ft.FilePicker()
+        SET self.dp_picker.on_result = self.set_dp_image
+        ADD self.page.overlay.append TO (self.dp_picker)
+        ADD self.page.update()
+        
+        SET self.gcash_changed = self.handle_next_button
+        
+        SET self.onboarding_page.next_button.on_click = self.switch_view
+        SET self.onboarding_page.qr_upload_button.on_click = self.open_qr_chooser
+        SET self.onboarding_page.profile_upload_button.on_click = self.open_profile_image_chooser
+        SET self.onboarding_page.number_textfield.on_change = lambda e: self.handle_next_button()
+    
+    MODULE open_qr_chooser(self, event)
+        SET self.qr_picker.pick_files("Choose GCash QR Code Image", allowed_extensions = ["png", "jpg", "jpeg", "PNG", "JPG"], file_type = ft.FilePickerFileType.CUSTOM)
+    
+    MODULE open_profile_image_chooser(self, event)
+        SET self.dp_picker.pick_files("Choose a User Image", allowed_extensions = ["png", "jpg", "jpeg", "PNG", "JPG"], file_type = ft.FilePickerFileType.CUSTOM)
+    
+    MODULE handle_next_button(self)
+        IF self.gcash_qr_base64 != "" and len(self.onboarding_page.number_textfield.value) == 11 and (self.onboarding_page.number_textfield.value[:2] == "09" or self.onboarding_page.number_textfield.value[:3] == "639") THEN
+            SET self.onboarding_page.next_button.disabled = False
+            ADD self.onboarding_page.next_button.update()
+        ELSE
+            DECLARE self.onboarding_page.next_button.disabled = True
+            ADD self.onboarding_page.next_button.update()
+    
+    MODULE gcash_changed(self)
+        PASS
+    
+    MODULE set_dp_image(self, event: ft.FilePickerResultEvent)
+        IF event.files is not None THEN
+            SET self.dp_image_path = event.files[0].path
+            SET image = Image.open(self.dp_image_path).convert("RGBA")
+            SET pil_img = image.resize((200, 200))
+            SET self.dp_image_buffer = BytesIO()
+            ADD pil_img.save TO (self.dp_image_buffer, format="PNG")
+            
+            SET self.dp_image_string = base64.b64encode(self.dp_image_buffer.getvalue()).decode("utf-8")
+            SET self.onboarding_page.user_image.src_base64 = self.dp_image_string
+            ADD self.onboarding_page.user_image.update()
+        ELSE
+            SET self.dp_image_path = ""
+    
+    MODULE set_qr_image(self, event: ft.FilePickerResultEvent)
+        IF event.files is not None THEN
+            SET self.qr_image_path = event.files[0].path
+            SET image = cv2.imread(self.qr_image_path)
+            SET detector = cv2.QRCodeDetector()
+            SET data, _, _ = detector.detectAndDecode(image)
+            
+            IF data == "" or data == None THEN
+                SET self.gcash_qr_base64 = ""
+                SET self.page.snack_bar = ft.SnackBar(ft.Text("The QR Code image is invalid"), duration=3000)
+                SET self.page.snack_bar.open = True
+                ADD self.page.update()
+                RETURN
+            
+            SET qr = qrcode.QRCode(
+                version = 1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size = 10,
+                border = 4
+            )
+            
+            ADD qr.add_data TO (data)
+            ADD qr.make TO (fit=True)
+            SET image = qr.make_image()
+            SET self.buffered = BytesIO()
+            ADD image.save TO (self.buffered, format="JPEG")
+            SET self.gcash_qr_base64 = base64.b64encode(self.buffered.getvalue()).decode("utf-8")
+            SET self.onboarding_page.qr_image.src_base64 = self.gcash_qr_base64
+            ADD self.onboarding_page.qr_image.update()
+            ADD self.gcash_changed()
+        ELSE
+            SET self.qr_image_path = ""
+    
+    MODULE switch_view(self, event: ft.ControlEvent)
+        CREATE email: SET str = self.page.client_storage.get("email")
+        
+        CREATE current_user: SET User = None
+        FOR user IN self.repository.users
+            IF user.email == email.replace(".", ",") THEN
+                SET current_user = user
+        
+        IF self.current == 0 THEN
+            SET self.onboarding_page.main_column.offset = ft.transform.Offset(-1, 0)
+            ADD self.onboarding_page.main_column.update()
+            SET self.onboarding_page.gcash_column.offset = ft.transform.Offset(0, 0)
+            ADD self.onboarding_page.gcash_column.update()
+            SET self.onboarding_page.profile_column.offset = ft.transform.Offset(1, 0)
+            ADD self.onboarding_page.profile_column.update()
+            SET self.onboarding_page.next_button.disabled = True
+            ADD self.onboarding_page.next_button.update()
+            SET self.current = 1
+        ELSE IF self.current == 1 THEN
+            SET self.onboarding_page.main_column.offset = ft.transform.Offset(-2, 0)
+            ADD self.onboarding_page.main_column.update()
+            SET self.onboarding_page.gcash_column.offset = ft.transform.Offset(-1, 0)
+            ADD self.onboarding_page.gcash_column.update()
+            SET self.onboarding_page.profile_column.offset = ft.transform.Offset(0, 0)
+            ADD self.onboarding_page.profile_column.update()
+            
+            SET id = self.repository.upload_image(f"{current_user.email}|QRCode.png", self.buffered)
+            
+            SET current_user.qr_image_id = id
+            SET current_user.gcash_number = self.onboarding_page.number_textfield.value
+            
+            SET self.onboarding_page.next_button.text = "Start Morax"
+            ADD self.onboarding_page.next_button.update()
+            SET self.current = 2
+        ELSE IF self.current == 2 THEN
+            IF self.dp_image_path != "" THEN
+                SET id = self.repository.upload_image(f"{current_user.email}|DP.png", self.dp_image_buffer)
+                SET current_user.picture_link = id
+                SET current_user.first_run = False
+                ADD self.repository.update_user TO (current_user)
+            
+            ADD self.page.go TO ("/home")
+END
