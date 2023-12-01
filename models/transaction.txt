@@ -1,0 +1,67 @@
+from typing import List
+
+class Transaction:
+    Module __init__(self, name: str, description: str, image_id: str, paid_by, posted_by: str, price: str, time_created: str):
+        SET self._description = description
+        SET self._image_id = image_id
+        SET self._paid_by = paid_by
+        SET self._name = name
+	SET self._posted_by = posted_by
+        SET self._price = price
+        SET self._time_created = time_created
+    
+    CALL property
+    MODULE description(self):
+        return self._description
+    
+    CALL description.setter
+    MODULE description(self, description:str):
+        SET self._description = description
+    
+    CALL property
+    MODULE name(self):
+        return self._name
+    
+    CALL name.setter
+    def name(self, name:str):
+	SET self._name = name
+    
+    CALL property
+    MODULE image_id(self):
+        return self._image_id
+    
+    CALL image_id.setter
+    MODULE image_id(self, image_id:str):
+        SET self._image_id = image_id
+    
+    CALL property
+    MODULE paid_by(self):
+        return self._paid_by
+    
+    CALL paid_by.setter
+    MODULE paid_by(self, paid_by):
+        SET self._paid_by = paid_by
+    
+    CALL property
+    def posted_by(self) -> str:
+        return self._posted_by
+    
+    CALL posted_by.setter
+    MODULE posted_by(self, posted_by: str):
+        SET self._posted_by = posted_by
+    
+    CALL property
+    MODULE price(self):
+        return self._price
+    
+    CALL price.setter
+    MODULE price(self, price:str):
+        SET self._price = price
+    
+    CALL property
+    MODULE time_created(self):
+        return self._time_created
+    
+    CALL time_created.setter
+    MODULE time_created(self, time_created:str):
+        SET self._time_created = time_created

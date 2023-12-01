@@ -1,0 +1,20 @@
+class Member:
+    module __init__(self, username: str, email: str):
+        SET self._email = emailS
+	SET self._username = username
+    
+    Call property
+    Module email(self):
+        return self._email
+    
+    Call email.setter
+    Module email(self, email:str):
+        SET self._email = email
+    
+    Call property
+    Module username(self):
+        return self._username
+    
+    Call username.setter
+    Module username(self, username:str):
+        SET self._username = username
