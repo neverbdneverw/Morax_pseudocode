@@ -1,3 +1,4 @@
+START
 IMPORT flet AS ft
 
 CREATE class PaidUserButton(ft.Container)
