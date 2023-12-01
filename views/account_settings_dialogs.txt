@@ -1,7 +1,8 @@
-import flet as ft
+START
+IMPORT flet AS ft
 
-CREATE ProfilePictureChangeDialog(ft.AlertDialog):
-    MODULE __init__(self):
+CREATE ProfilePictureChangeDialog(ft.AlertDialog)
+    MODULE __init__(self)
         super().__init__()
         SET self.save_changes_button = ft.TextButton(
             "Save Changes",
@@ -33,8 +34,8 @@ CREATE ProfilePictureChangeDialog(ft.AlertDialog):
         
         SET self.content = content_column
 
-CREATE EditUsernameDialog(ft.AlertDialog):
-    MODULE __init__(self):
+CREATE EditUsernameDialog(ft.AlertDialog)
+    MODULE __init__(self)
         super().__init__()
         SET self.save_changes_button = ft.TextButton(
             "Save Changes",
@@ -70,8 +71,8 @@ CREATE EditUsernameDialog(ft.AlertDialog):
         
         SET self.content = content_column
 
-CREATE EditPasswordDialog(ft.AlertDialog):
-    MODULE __init__(self):
+CREATE EditPasswordDialog(ft.AlertDialog)
+    MODULE __init__(self)
         super().__init__()
         SET self.save_changes_button = ft.TextButton(
             "Save Changes",
@@ -124,8 +125,8 @@ CREATE EditPasswordDialog(ft.AlertDialog):
         
         SET self.content = content_column
 
-CREATE EditGcashDialog(ft.AlertDialog):
-    MODULE __init__(self):
+CREATE EditGcashDialog(ft.AlertDialog)
+    MODULE __init__(self)
         super().__init__()
         SET self.save_changes_button = ft.TextButton(
             "Save Changes",
@@ -180,5 +181,6 @@ CREATE EditGcashDialog(ft.AlertDialog):
         
         SET self.content = self.content_container
     
-    MODULE update_colors(self, colors):
+    MODULE update_colors(self, colors)
         SET self.content_container.bgcolor = colors["f6f7f8"]
+END
