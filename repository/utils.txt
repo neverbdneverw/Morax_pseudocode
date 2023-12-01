@@ -24,4 +24,10 @@ CREATE LIST accepted_months = [
     
     "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ]
+
+CREATE DICTIONARY currency_symbols = {
+    "PHP": "₱",
+    "USD": "$",
+    "EU" : "€"
+}
 END
