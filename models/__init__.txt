@@ -1,4 +1,6 @@
-from .user import User
-from .group import Group
-from .member import Member
-from .transaction import Transaction
+START
+FROM .user IMPORT User
+FROM .group IMPORT Group
+FROM .member IMPORT Member
+FROM .transaction IMPORT Transaction
+END
