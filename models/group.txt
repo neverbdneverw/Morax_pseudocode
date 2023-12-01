@@ -1,5 +1,6 @@
-class Group:
-    MODULE __init__(self, group_name: str, created_by: str, description: str, members: list, picture_id: str, unique_code: str, transactions: list):
+START
+CREATE class Group
+    MODULE __init__(self, group_name: str, created_by: str, description: str, members: list, picture_id: str, unique_code: str, transactions: list)
         SET self._group_name = group_name
         SET self._created_by = created_by
         SET self._description = description
@@ -9,53 +10,54 @@ class Group:
         SET self._transactions = transactions
     
     Call property
-    MODULE group_name(self):
-        return self._group_name
+    MODULE group_name(self)
+        RETURN self._group_name
     
     Call property
-    MODULE created_by(self):
-        return self._created_by
+    MODULE created_by(self)
+        RETURN self._created_by
     
     Call created_by.setter
-    MODULE created_by(self, created_by: str):
+    MODULE created_by(self, created_by: str)
         self._created_by = created_by
     
     Call property
-    MODULE description(self):
-        return self._description
+    MODULE description(self)
+        RETURN self._description
     
     Call description.setter
-    MODULE description(self, description: str):
+    MODULE description(self, description: str)
         self._description = description
     
     Call property
-    MODULE members(self):
-        return self._members
+    MODULE members(self)
+        RETURN self._members
     
     Call members.setter
-    MODULE members(self, members: list):
+    MODULE members(self, members: list)
         self._members = members
     
     Call property
-    MODULE picture_id(self):
-        return self._picture_id
+    MODULE picture_id(self)
+        RETURN self._picture_id
     
     Call picture_id.setter
-    MODULE picture_id(self, picture_id: str):
+    MODULE picture_id(self, picture_id: str)
         self._picture_id = picture_id
     
     Call property
-    MODULE unique_code(self):
-        return self._unique_code
+    MODULE unique_code(self)
+        RETURN self._unique_code
     
     Call unique_code.setter
-    MODULE unique_code(self, unique_code: str):
+    MODULE unique_code(self, unique_code: str)
         self._unique_code = unique_code
     
     Call property
-    MODULE transactions(self):
-        return self._transactions
+    MODULE transactions(self)
+        RETURN self._transactions
     
     Call transactions.setter
-    MODULE transactions(self, transactions: list):
+    MODULE transactions(self, transactions: list)
         self._transactions = transactions
+END
