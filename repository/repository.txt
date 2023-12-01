@@ -84,16 +84,11 @@ CREATE class Repository
                     ELSE
                         SET transaction_paid_by = list(dict(transactions_dict[transaction]['Paid by']).items())
                     
-                    SET transaction_posted_by = ""
-                    IF transactions_dict[transaction]['Posted by'] == "" THEN
-                        SET transaction_posted_by = ""
-                    ELSE
-                        FOR user IN self.users
-                            IF user.email == transactions_dict[transaction]['Posted by']["Email"] THEN
-                                SET transaction_posted_by = user.email
-                    
-                    DISPLAY "transaction_posted_by"
-            
+                    set transaction_posted_by = ""
+                    for user in self.users
+                        if user.email == transactions_dict[transaction]['Posted by']["Email"] then
+                            set transaction_posted_by = user.email
+                                
                     ADD transactions.append TO (
                         Transaction(
                             transaction_name,
