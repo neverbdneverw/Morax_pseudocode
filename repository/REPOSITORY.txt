@@ -1,0 +1,246 @@
+START
+IMPORT firebase_admin
+IMPORT random
+IMPORT smtplib
+IMPORT ssl
+IMPORT io
+
+FROM email.message IMPORT EmailMessage
+FROM firebase_admin IMPORT db, credentials
+FROM google.oauth2 IMPORT service_account
+FROM googleapiclient.discovery IMPORT build
+FROM googleapiclient.http IMPORT MediaIoBaseDownload, MediaIoBaseUpload
+FROM googleapiclient.errors IMPORT HttpError
+
+FROM models IMPORT User, Group, Member, Transaction
+
+FROM .secrets IMPORT *
+
+FROM typing IMPORT List
+
+CREATE class Repository
+    CREATE users: List[User] = [] / EMPTY LIST
+    CREATE groups: List[Group] = [] / EMPTY LIST
+    MODULE __init__(self)
+        SET cred = credentials.Certificate("repository/credentials.json")
+        ADD firebase_admin.initialize_app TO (cred, {"databaseURL" : "https://morax-shared-financial-manager-default-rtdb.asia-southeast1.firebasedatabase.app/"})
+        SET scope = ['https://www.googleapis.com/auth/drive']
+        SET drive_credentials = service_account.Credentials.from_service_account_file(filename="repository/credentials.json", scopes=scope)
+        SET self.service = build('drive', 'v3', credentials=drive_credentials)
+        ADD self.update_refs()
+        
+        ADD self.load_users()
+        ADD self.load_groups()
+
+     MODULE update_refs(self)
+        SET ref = db.reference("/")
+        SET self.dictionary = dict(ref.get())
+        SET results = self.service.files().list(pageSize=1000, fields="nextPageToken, files(id, name, mimeType)", q='name contains "de"').execute()
+        SET self.drive_files = results.get('files', [])
+
+     MODULE load_users(self)
+        self.users = [] / EMPTY LIST
+        SET repo_users = self.dictionary["Users"]
+        
+        FOR user IN repo_users
+            ADD self.users.append TO (
+                User(
+                    user,
+                    repo_users[user]['First Run'],
+                    repo_users[user]['GCash'],
+                    repo_users[user]['Password'],
+                    repo_users[user]['Picture Link'],
+                    repo_users[user]['QR Image id'],
+                    repo_users[user]['Username']
+                )
+            )
+
+     MODULE load_groups(self)
+        self.groups = [] / EMPTY LIST
+        SET repo_groups = self.dictionary["Groups"]
+        
+        FOR group IN repo_groups
+            SET created_by = repo_groups[group]['Created by']
+            SET description = repo_groups[group]['Description']
+            SET members = [Member(member[0], member[1]) for member in dict(repo_groups[group]['Members']).items()]
+            SET picture_id = repo_groups[group]['Picture id']
+            SET unique_code = repo_groups[group]['Unique code']
+            
+            transactions = [] / EPMTY LIST
+            
+            SET transactions_dict = repo_groups[group]['Transactions']
+            
+            IF transactions_dict != "None" THEN
+                FOR transaction IN transactions_dict
+                    SET transaction_name = transaction
+                    SET transaction_description = transactions_dict[transaction]['Description']
+                    SET transaction_image_id = transactions_dict[transaction]['Image id']
+                    SET transaction_price = transactions_dict[transaction]['Price']
+                    SET transaction_time_created = transactions_dict[transaction]['Time created']
+                    
+                    SET transaction_paid_by = None
+                    IF transactions_dict[transaction]['Paid by'] == "None" THEN
+                        SET transaction_paid_by = "None"
+                    ELSE
+                        SET transaction_paid_by = list(dict(transactions_dict[transaction]['Paid by']).items())
+                    
+                    SET transaction_posted_by = ""
+                    IF transactions_dict[transaction]['Posted by'] == "" THEN
+                        SET transaction_posted_by = ""
+                    ELSE
+                        FOR user IN self.users
+                            IF user.email == transactions_dict[transaction]['Posted by']["Email"] THEN
+                                SET transaction_posted_by = user.email
+                    
+                    DISPLAY "transaction_posted_by"
+            
+                    ADD transactions.append TO (
+                        Transaction(
+                            transaction_name,
+                            transaction_description,
+                            transaction_image_id,
+                            transaction_paid_by,
+                            transaction_posted_by,
+                            transaction_price,
+                            transaction_time_created
+                        )
+                    )
+            
+            ADD self.groups.append TO (
+                Group(
+                    group,
+                    created_by,
+                    description,
+                    members,
+                    picture_id,
+                    unique_code,
+                    transactions
+                )
+            )
+
+     MODULE update_group(self, group: Group)
+        SET members = dict()
+        SET transactions = dict()
+        
+        CREATE member: SET Member = None
+        FOR member IN group.members
+            ADD members.update TO ({member.username : member.email})
+            
+        CREATE transaction: SET Transaction = None
+        FOR transaction IN group.transactions
+            SET paid_users = dict()
+            
+            IF len(paid_users.items()) == 0 THEN
+                SET paid_users = "None"
+            ELSE
+                SET paid_user: tuple = None
+                FOR paid_user IN transaction.paid_by
+                    ADD paid_users.update({paid_user[0] : paid_user[1]})
+            
+            ADD transactions.update TO ({
+                transaction.name : {
+                    "Description" : transaction.description,
+                    "Image id" : transaction.image_id,
+                    "Price" : transaction.price,
+                    "Time created": transaction.time_created,
+                    "Paid by": paid_users,
+                    "Posted by": { "Email" : transaction.posted_by },
+                }
+            })
+        
+        IF len(transactions.items()) == 0 THEN
+            SET transactions = "None"
+        
+        ADD db.reference TO ('/Groups/').update({
+            group.group_name: {
+                "Created by": group.created_by,
+                "Description": group.description,
+                "Picture id": group.picture_id,
+                "Unique code": group.unique_code,
+                "Members": members,
+                "Transactions": transactions
+            }
+        })
+        
+        ADD self.update_refs()
+        ADD self.load_groups()
+
+     MODULE update_user(self, user: User)
+        ADD db.reference TO ('/Users/').update({
+            user.email: {
+                "First Run": user.first_run,
+                "GCash": user.gcash_number,
+                "Password": user.password,
+                "Picture Link": user.picture_link,
+                "QR Image id": user.qr_image_id,
+                "Username": user.username
+            }
+        })
+        
+        ADD self.update_refs()
+        ADD self.load_users()
+
+     MODULE upload_image(self, file_name: str, buffer: io.BytesIO) -> str
+        TRY
+            SET media = MediaIoBaseUpload(buffer, mimetype='image/png')
+            SET uploaded_file = self.service.files().create(body={'name': file_name}, media_body=media, fields='id').execute()
+            SET id = uploaded_file.get('id')
+
+            RETURN id
+            
+        EXCEPT HttpError as error
+            DISPLAY "An error occurred:" + error
+            
+            RETURN
+
+     MODULE download_image(self, image_id: str) -> io.BytesIO
+        IF image_id == "" THEN
+            RETURN
+        
+        TRY
+            SET request_file = self.service.files().get_media(fileId = image_id)
+            SET file = io.BytesIO()
+            SET downloader = MediaIoBaseDownload(file, request_file)
+            SET done = False
+            WHILE done IS False
+                SET status, done = downloader.next_chunk()
+            
+            RETURN file
+        EXCEPT HttpError as error
+            DISPLAY "An error occurred:" + error
+            RETURN
+
+     MODULE delete_transaction(self, group_name: str, transaction: Transaction)
+        ADD db.reference TO (f"/Groups/{group_name}/Transactions/{transaction.name}").delete()
+        
+        ADD self.update_refs()
+        ADD self.load_groups()
+
+      MODULE get_email_confirmation_code(self, email)
+        SET code = random.randrange(100000, 999999)
+        SET subject = "Do you want to reset your password with Morax? "
+        SET body = f"""
+Someone is trying to change your password within the Morax Application.
+
+If this is you, enter the following code on the app prompt:" +
+
+    code
+
+"Ignore this message if not."
+        """
+
+        SET email_message = EmailMessage()
+        SET email_message["From"] = email_sender
+        SET email_message["To"] = email
+        SET email_message["Subject"] = subject
+        ADD email_message.set_content TO (body)
+
+        SET context = ssl.create_default_context()
+
+        WITH smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) AS smtp
+            ADD smtp.login TO (email_sender, app_password)
+            ADD smtp.sendmail TO (email_sender, email, email_message.as_string())
+
+        RETURN code
+END
+  	
