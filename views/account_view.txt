@@ -1,7 +1,8 @@
-import flet as ft
+START
+IMPORT flet AS ft
 
-CREATE AccountView(ft.Container):
-    MODULE __init__(self):
+CREATE AccountView(ft.Container)
+    MODULE __init__(self)
         super().__init__(
             SET offset=ft.transform.Offset(0, 4.5),
             SET animate_offset=ft.animation.Animation(300)
@@ -173,11 +174,11 @@ CREATE AccountView(ft.Container):
             spacing=0
         )
     
-    MODULE show(self, delta):
+    MODULE show(self, delta)
         SET self.offset = ft.transform.Offset(0, delta)
         CALL self.update()
     
-    MODULE update_colors(self, colors):
+    MODULE update_colors(self, colors)
         SET self.change_user_picture_button.bgcolor = colors["f8fafc"]
         SET self.change_user_picture_button.color = colors["c09451"]
         SET self.username_text.color = colors["fcffff"]
@@ -207,3 +208,4 @@ CREATE AccountView(ft.Container):
         SET self.gcash_button.content.controls[0].controls[0].color = colors["c09451"]
         SET self.gcash_button.content.controls[0].controls[1].color = colors["black"]
         SET self.gcash_button.content.controls[1].color = colors["c09451"]
+END
