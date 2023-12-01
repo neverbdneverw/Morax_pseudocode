@@ -1,0 +1,208 @@
+START
+IMPORT flet AS ft
+FROM views.item_button IMPORT ItemButton
+
+CREATE class ItemInfoDialog(ft.AlertDialog)
+    MODULE __init__(self)
+        SUPER().__init__()
+        SET self.item_name = ft.Text(
+            "Gatas",
+            weight=ft.FontWeight.W_700,
+        )
+        
+        SET self.price = ft.Text(
+            "₱ 450",
+            weight=ft.FontWeight.W_700,
+        )
+        
+        SET self.title = ft.Row(
+            controls = [self.item_name, self.price],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        )
+        
+        SET self.item_image = ft.Image(
+            "/default_image.png",
+            width=120,
+            height=120
+        )
+        
+        SET self.account_image = ft.Image(
+            "/empty_user_image.svg",
+            width = 36,
+            height = 36
+        )
+        
+        SET self.account_name_info = ft.Text(
+            "Owen David"
+        )
+        
+        SET account_row = ft.Row(
+            controls=[self.account_image, self.account_name_info],
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        
+        SET self.description = ft.Text(
+            "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available.",
+            weight=ft.FontWeight.W_400
+        )
+        
+        SET description_column = ft.Column(
+            controls=[self.description],
+            height=100,
+            scroll=ft.ScrollMode.ALWAYS
+        )
+        
+        SET self.item_post_time = ft.Text(
+            value = "Date Posted: ",
+            spans = [ft.TextSpan(
+                f"October 30, 2023 - 12:00 am",
+                style=ft.TextStyle(italic=True, weight=ft.FontWeight.W_300)
+            )],
+            weight=ft.FontWeight.W_500,
+            italic=True,
+        )
+        
+        SET info_column = ft.Column(
+            controls=[account_row, description_column, self.item_post_time],
+            width = 350,
+            height = 150
+        )
+        
+        SET self.main_row = ft.Row(
+            controls = [self.item_image, info_column]
+        )
+        
+        SET qr_indicator = ft.Text(
+            "Pay with QR Code"
+        )
+        
+        SET self.qr_code = ft.Image(
+            "/sample_qr.png",
+            width = 120,
+            height = 120
+        )
+        
+        SET qr_column = ft.Column(
+            controls=[qr_indicator, self.qr_code],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        
+        SET self.account_image = ft.Image(
+            "/empty_user_image.svg",
+            width = 30,
+            height = 30
+        )
+        
+        SET self.account_name_payment = ft.Text(
+            "Owen David",
+            size=12
+        )
+        
+        SET gcash_acct_user = ft.Column(
+            controls=[self.account_image, self.account_name_payment],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=0
+        )
+        
+        SET self.gcash_number = ft.Text(
+            value = "Gcash number: ",
+            size=14,
+            spans = [ft.TextSpan(
+                f"09999999999",
+            )],
+        )
+        
+        SET gcash_info_row = ft.Row(
+            controls=[gcash_acct_user, self.gcash_number],
+            spacing=10
+        )
+        
+        SET self.payment_item_name = ft.Text(
+            value = "Item: ",
+            spans = [ft.TextSpan(
+                f"Gatas",
+            )],
+        )
+        
+        SET self.item_price = ft.Text(
+            value = "Amount to be paid: ",
+            spans = [ft.TextSpan(
+                "₱ 450",
+            )],
+        )
+        
+        SET gcash_info_column = ft.Column(
+            controls=[gcash_info_row, self.payment_item_name, self.item_price],
+            width = 300,
+            spacing=30
+        )
+        
+        SET self.gcash_container = ft.Container(
+            content=gcash_info_column,
+            padding=5
+        )
+        
+        SET self.payment_row = ft.Row(
+            controls=[qr_column, self.gcash_container],
+            spacing = 50,
+            width = 480,
+            height = 150
+        )
+        
+        SET self.payment_preview_image = ft.Image(
+            src="/default_image.png",
+            width=120,
+            height=120
+        )
+        
+        SET self.upload_proof_button = ft.ElevatedButton(
+            content=ft.Text(
+                value="Upload proof of payment"
+            )
+        )
+        
+        SE Tself.proof_column = ft.Column(
+            width = 480,
+            height = 150,
+            controls=[self.payment_preview_image, self.upload_proof_button],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+
+        SET self.switcher = ft.AnimatedSwitcher(
+            content = self.main_row,
+            transition=ft.AnimatedSwitcherTransition.FADE,
+            duration=300,
+            reverse_duration=300,
+            switch_in_curve=ft.AnimationCurve.LINEAR,
+            switch_out_curve=ft.AnimationCurve.LINEAR,
+        )
+        
+        SET self.pay_button = ft.TextButton("Pay now")
+        SET self.cancel_button = ft.TextButton("Cancel")
+        
+        SET self.content=self.switcher
+        CREATE LIST self.actions=[
+            self.pay_button,
+            self.cancel_button,
+        ]
+        SET self.actions_alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+    
+    MODULE show_payment_details(self)
+        SET self.switcher.content = self.payment_row
+        ADD self.switcher.update()
+    
+    MODULE update_colors(self, colors)
+        SET self.item_name.color = colors["ae8948"]
+        SET self.price.color = colors["ae8948"]
+        SET self.account_name_info.color = colors["ae8948"]
+        SET self.item_post_time.color = colors["ae8948"]
+        
+        SET self.gcash_number.color = colors["black"]
+        SET self.item_price.color = colors["ae8948"]
+        SET self.payment_item_name.color = colors["ae8948"]
+        
+        SET self.gcash_container.bgcolor = colors["f6f7f8"]
+        
+        SET self.upload_proof_button.bgcolor = colors["d6d6d6"]
+        SET self.upload_proof_button.content.color = colors["black"]
+END

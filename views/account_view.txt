@@ -1,0 +1,209 @@
+import flet as ft
+
+CREATE AccountView(ft.Container):
+    MODULE __init__(self):
+        super().__init__(
+            SET offset=ft.transform.Offset(0, 4.5),
+            SET animate_offset=ft.animation.Animation(300)
+        )
+        
+        SET self.user_picture = ft.Image(
+            src = "/empty_user_image.svg",
+            width=100,
+            height=100
+        )
+        
+        SET user_picture_container = ft.Container(
+            self.user_picture,
+            border_radius=15
+        )
+        
+        SET self.change_user_picture_button = ft.ElevatedButton(
+            text="Change",
+        )
+        
+        SET self.username_text = ft.Text(
+            "Owen David",
+            size="36",
+            weight=ft.FontWeight.BOLD,
+        )
+        
+        SET self.email_text = ft.Text(
+            "22-04905@g.batstate-u.edu.ph",
+            size="16",
+        )
+        
+        SET user_info_column = ft.Column(
+            controls=[self.username_text, self.email_text],
+            expand=True
+        )
+        
+        SET picture_row = ft.Row(
+            controls=[
+                user_picture_container,
+                user_info_column
+            ]
+        )
+        
+        SET profile_info_column = ft.Column(
+            controls = [picture_row, self.change_user_picture_button],
+            expand=True
+        )
+        
+        SET self.profile_info_container = ft.Container(
+            profile_info_column,
+            padding=ft.padding.all(20),
+            margin=ft.margin.only(150, 0, 150, 0),
+            gradient=ft.LinearGradient(
+                colors=[
+                    "#9a6e32",
+                    "#c7ac65"
+                ]
+            )
+        )
+        
+        SET account_labeler = ft.Text(
+            "Account",
+            size=18,
+            weight=ft.FontWeight.BOLD
+        )
+        
+        SET button_label_contents = ft.Row(
+            controls=[
+                ft.Row(
+                    controls = [
+                        ft.Icon(ft.icons.EDIT, color="#c09451"),
+                        ft.Text("Edit Username", color="black", weight=ft.FontWeight.W_400)
+                    ]
+                ),
+                ft.Icon(ft.icons.NAVIGATE_NEXT, color="#c09451")
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        )
+        
+        SET self.edit_profile_button = ft.ElevatedButton(
+            content=button_label_contents
+        )
+        
+        security_labeler = ft.Text(
+            "Security",
+            size=18,
+            weight=ft.FontWeight.BOLD
+        )
+        
+        SET self.change_password_button = ft.Container(
+            content = ft.Row(
+                controls=[
+                    ft.Row(
+                        controls=[
+                            ft.Icon(ft.icons.LOCK, color="#c09451"),
+                            ft.Text("Change Password", color="black", weight=ft.FontWeight.W_400)
+                        ]
+                    ),
+                    ft.Icon(ft.icons.NAVIGATE_NEXT, color="#c09451")
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+            ),
+            margin=ft.margin.only(22, 0, 22, 0)
+        )
+        
+        SET self.gcash_button = ft.Container(
+            content = ft.Row(
+                controls=[
+                    ft.Row(
+                        controls=[
+                            ft.Text("G", weight=ft.FontWeight.W_900, size = 32, color="#c09451"),
+                            ft.Text("GCash", color="black", weight=ft.FontWeight.W_400)
+                        ]
+                    ),
+                    ft.Icon(ft.icons.NAVIGATE_NEXT, color="#c09451")
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+            ),
+            margin=ft.margin.only(22, 0, 22, 0)
+        )
+        
+        SET account_settings_column = ft.Column(
+            controls=[
+                account_labeler,
+                self.edit_profile_button,
+                security_labeler,
+                self.change_password_button,
+                self.gcash_button
+            ],
+            spacing=10,
+            expand=True,
+            horizontal_alignment=ft.CrossAxisAlignment.STRETCH
+        )
+        
+        SET self.account_settings_container = ft.Container(
+            account_settings_column,
+            padding=ft.padding.all(50),
+            margin=ft.margin.only(150, 0, 150, 0),
+            expand=True
+        )
+        
+        SET self.logout_button = ft.ElevatedButton(
+            "Log Out",
+            width=200,
+            height=36
+        )
+        
+        SET logout_column = ft.Column(
+            controls=[
+                ft.Row(
+                    [self.logout_button],
+                    alignment=ft.MainAxisAlignment.CENTER
+                )
+            ],
+            expand=True,
+            horizontal_alignment=ft.CrossAxisAlignment.STRETCH
+        )
+        
+        SET self.logout_button_container = ft.Container(
+            logout_column,
+            padding=ft.padding.all(20),
+            margin=ft.margin.only(150, 0, 150, 0),
+            expand=True
+        )
+        
+        SET self.content = ft.Column(
+            [self.profile_info_container, self.account_settings_container, self.logout_button_container],
+            horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+            spacing=0
+        )
+    
+    MODULE show(self, delta):
+        SET self.offset = ft.transform.Offset(0, delta)
+        CALL self.update()
+    
+    MODULE update_colors(self, colors):
+        SET self.change_user_picture_button.bgcolor = colors["f8fafc"]
+        SET self.change_user_picture_button.color = colors["c09451"]
+        SET self.username_text.color = colors["fcffff"]
+        SET self.email_text.color = colors["fcffff"]
+        
+        SET self.profile_info_container.gradient.colors = [
+            colors["9a6e32"],
+            colors["c7ac65"]
+        ]
+        
+        SET self.bgcolor = colors["f6f7f8"]
+        SET self.account_settings_container.bgcolor = colors["white"]
+        SET self.logout_button_container.bgcolor = colors["white"]
+        
+        SET self.logout_button.bgcolor = colors["ae8948"]
+        SET self.logout_button.color = colors["fcffff"]
+        
+        SET self.edit_profile_button.bgcolor = colors["d6d6d6"]
+        SET self.edit_profile_button.content.controls[0].controls[0].color = colors["c09451"]
+        SET self.edit_profile_button.content.controls[0].controls[1].color = colors["black"]
+        SET self.edit_profile_button.content.controls[1].color = colors["c09451"]
+        
+        SET self.change_password_button.content.controls[0].controls[0].color = colors["c09451"]
+        SET self.change_password_button.content.controls[0].controls[1].color = colors["black"]
+        SET self.change_password_button.content.controls[1].color = colors["c09451"]
+        
+        SET self.gcash_button.content.controls[0].controls[0].color = colors["c09451"]
+        SET self.gcash_button.content.controls[0].controls[1].color = colors["black"]
+        SET self.gcash_button.content.controls[1].color = colors["c09451"]

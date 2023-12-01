@@ -1,0 +1,89 @@
+START
+IMPORT flet AS ft
+FROM flet_route IMPORT Params, Basket
+
+CREATE class OpeningPage()
+    MODULE __init__(self)
+        SET logo = ft.Image(
+            src = "/logo.png",
+            width = 400,
+            height = 400
+        )
+        
+        SET logo_row = ft.Row(
+            alignment = ft.MainAxisAlignment.CENTER,
+            controls=[logo]
+        )
+        
+        SET self.login_button = ft.ElevatedButton(
+            width = 250,
+            height = 48,
+            content = ft.Text(
+                value = "Log in",
+                size = 20
+            ),
+        )
+        
+        SET login_btn_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls = [self.login_button]
+        )
+        
+        SET self.account_none_indicator = ft.Text(
+            value = "Don't have an account?",
+            size = 16
+        )
+        
+        SET account_none_indicator_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls = [self.account_none_indicator]
+        )
+        
+        SET self.signup_button = ft.ElevatedButton(
+            width = 250,
+            height = 48,
+            content = ft.Text(
+                value = "Sign up",
+                size = 20
+            ),
+        )
+        
+        SET signup_btn_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls = [self.signup_button]
+        )
+        
+        SET main_column = ft.Column(
+            controls = [logo_row, login_btn_row, account_none_indicator_row, signup_btn_row]
+        )
+        
+        SET self.route_address = "/"
+        SET self.view = ft.View(
+            route = self.route_address,
+            controls = [main_column]
+        )
+    
+    MODULE get_view(self, page: ft.Page, params: Params, basket: Basket)
+        SET self.basket = basket
+        SET self.page = page
+        RETURN self.view
+    
+    MODULE update_colors(self, colors)
+        SET self.login_button.bgcolor = colors["d6d6d6"]
+        
+        SET self.login_button.content.color = colors["ae8948"]
+        
+        SET self.account_none_indicator.color = colors["ae8948"]
+        
+        SET self.signup_button.bgcolor = colors["d6d6d6"]
+        
+        SET self.signup_button.content.color = colors["ae8948"]
+        
+        SET self.view.bgcolor = colors["fafafa"]
+    
+    MODULE update(self)
+        ADD self.login_button.update()
+        ADD self.account_none_indicator.update()
+        ADD self.signup_button.update()
+        ADD self.view.update()
+END

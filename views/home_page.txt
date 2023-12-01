@@ -1,0 +1,250 @@
+START
+IMPORT flet AS ft
+FROM flet_route IMPORT Params, Basket
+
+FROM views.group_listview IMPORT GroupListView
+FROM views.settings_view IMPORT SettingsView
+FROM views.feedback_view IMPORT FeedbackView
+FROM views.account_view IMPORT AccountView
+
+FROM views.add_dialog IMPORT AddDialog
+FROM views.item_info_dialog IMPORT ItemInfoDialog
+FROM views.add_receivable_dialog IMPORT AddReceivableDialog
+FROM views.show_receivable_info_dialog IMPORT ShowReceivableInfoDialog
+FROM views.account_settings_dialogs IMPORT *
+FROM views.settings_view_dialogs IMPORT *
+
+CREATE class HomePage()
+    MODULE __init__(self)
+        SET self.group_listview = GroupListView(self)
+        SET self.settings_view = SettingsView()
+        SET self.feedback_view = FeedbackView()
+        SET self.account_view = AccountView()
+        
+        SET self.slider_stack = ft.Stack(
+            expand=True,
+            controls=[self.group_listview, self.settings_view, self.feedback_view, self.account_view]
+        )
+        
+        SET content_area_row = ft.Row(
+            expand = True,
+            controls=[self.slider_stack]
+        )
+        
+        SET content_area = ft.Column(
+            expand=True,
+            spacing=0,
+            controls=[content_area_row]
+        )
+        
+        SET logo = ft.Image(
+            src = "/logo_filled.png",
+            width=50,
+            height=50
+        )
+        
+        SET logo_row = ft.Row(
+            controls=[logo],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET self.home_button = ft.IconButton(
+            selected=True,
+            icon=ft.icons.HOME_OUTLINED,
+            selected_icon=ft.icons.HOME_FILLED,
+            width = 50,
+            height = 50,
+            icon_size=36,
+            style=ft.ButtonStyle()
+        )
+        
+        SET home_button_row = ft.Row(
+            controls=[self.home_button],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET self.settings_button = ft.IconButton(
+            selected=False,
+            icon=ft.icons.SETTINGS_OUTLINED,
+            selected_icon=ft.icons.SETTINGS,
+            width = 50,
+            height = 50,
+            icon_size=36,
+            style=ft.ButtonStyle()
+        )
+        
+        SET settings_button_row = ft.Row(
+            controls=[self.settings_button],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET self.feedback_button = ft.IconButton(
+            selected=False,
+            icon=ft.icons.FEEDBACK_OUTLINED,
+            selected_icon=ft.icons.FEEDBACK,
+            width = 50,
+            height = 50,
+            icon_size=36,
+            style=ft.ButtonStyle(),
+        )
+        
+        SET feedback_button_row = ft.Row(
+            controls=[self.feedback_button],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET self.profile_button = ft.IconButton(
+            selected=False,
+            icon=ft.icons.ACCOUNT_CIRCLE_OUTLINED,
+            selected_icon=ft.icons.ACCOUNT_CIRCLE,
+            width = 50,
+            height = 50,
+            icon_size=36,
+            style=ft.ButtonStyle()
+        )
+        
+        SET profile_button_row = ft.Row(
+            controls=[self.profile_button],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET profile_button_container = ft.Container(
+            content=profile_button_row,
+            padding=12.5
+        )
+        
+        SET sidebar_top_column = ft.Column(
+            expand=True,
+            spacing=20,
+            alignment=ft.MainAxisAlignment.START,
+            controls=[logo_row, home_button_row, settings_button_row, feedback_button_row]
+        )
+    
+        SET sidebar = ft.Column(
+            expand = True,
+            width = 75,
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            horizontal_alignment=ft.MainAxisAlignment.CENTER,
+            controls=[sidebar_top_column, profile_button_container]
+        )
+        
+        SET self.sidebar_container = ft.Container(
+            content=sidebar,
+            padding=0
+        )
+        
+        SET main_row = ft.Row(
+            expand=True,
+            spacing=0,
+            controls=[
+                self.sidebar_container,
+                ft.VerticalDivider(width=1),
+                content_area]
+        )
+
+        SET self.route_address = "/home"
+        SET self.view = ft.View(
+            route = self.route_address,
+            padding=0,
+            controls = [main_row]
+        )
+        
+        SET self.add_group_dialog = AddDialog()
+        SET self.item_infos_dialog = ItemInfoDialog()
+        SET self.add_receivable_dialog = AddReceivableDialog()
+        SET self.receivable_info_dialog = ShowReceivableInfoDialog()
+        
+        SET self.change_profile_picture_dialog = ProfilePictureChangeDialog()
+        SET self.edit_username_dialog = EditUsernameDialog()
+        SET self.edit_password_dialog = EditPasswordDialog()
+        SET self.edit_gcash_dialog = EditGcashDialog()
+        
+        SET self.appearance_dialog = AppearanceDialog()
+        SET self.currency_dialog = CurrencyDialog()
+    
+    MODULE get_view(self, page: ft.Page, params: Params, basket: Basket)
+        SET self.page = page
+        SET self.email = self.page.client_storage.get("email")
+        ADD self.on_email_retrieved TO (self.email)
+        RETURN self.view
+    
+    MODULE on_email_retrieved(self, email: str)
+        PASS
+    
+    MODULE check_if_autologin(self
+        PASS
+    
+    MODULE trigger_reload_account_view(self)
+        PASS
+    
+    MODULE show_add_group_dialog(self)
+        SET self.page.dialog = self.add_group_dialog
+        SET self.add_group_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE close_dialog(self, event: ft.ControlEvent)
+        SET self.page.dialog.open = False
+        ADD self.page.update()
+    
+    MODULE show_info_dialog(self)
+        SET self.page.dialog = self.item_infos_dialog
+        SET self.item_infos_dialog.open = True
+        ADD self.page.update()
+        
+    MODULE show_add_receivable_dialog(self)
+        SET self.page.dialog = self.add_receivable_dialog
+        SET self.add_receivable_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE show_receivable_info_dialog(self)
+        SET self.page.dialog = self.receivable_info_dialog
+        SET self.receivable_info_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE show_profile_picture_change_dialog(self)
+        SET self.page.dialog = self.change_profile_picture_dialog
+        SET self.change_profile_picture_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE show_edit_username_dialog(self)
+        self.page.dialog = self.edit_username_dialog
+        self.edit_username_dialog.open = True
+        self.page.update()
+    
+    def show_edit_password_dialog(self):
+        SET self.page.dialog = self.edit_password_dialog
+        SET self.edit_password_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE show_change_gcash_qr_dialog(self)
+        SET self.page.dialog = self.edit_gcash_dialog
+        SET self.edit_gcash_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE show_appearance_dialog(self)
+        SET self.page.dialog = self.appearance_dialog
+        SET self.appearance_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE show_currency_dialog(self)
+        SET self.page.dialog = self.currency_dialog
+        SET self.currency_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE update_colors(self, colors)
+        CREATE DICTIONARY self.home_button.style.color={"selected": colors["black"], "": colors["d6d6d6"]}
+        CREATE DICTIONARY self.settings_button.style.color={"selected": colors["black"], "": colors["d6d6d6"]}
+        CREATE DICTIONARY self.feedback_button.style.color={"selected": colors["black"], "": colors["d6d6d6"]}
+        CREATE DICTIONARY self.profile_button.style.color={"selected": colors["black"], "": colors["d6d6d6"]}
+        
+        SET self.sidebar_container.bgcolor = colors["white"]
+        
+        ET self.view.bgcolor = colors["f8fafc"]
+        ADD self.update_subviews TO (colors)
+    
+    MODULE update_subviews(self, colors)
+        PASS
+    
+    MODULE reapply_theme(self)
+        PASS
+END

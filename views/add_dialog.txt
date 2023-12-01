@@ -1,0 +1,177 @@
+import flet as ft
+
+CREATE AddDialog(ft.AlertDialog):
+    MODULE __init__(self):
+        super().__init__()
+	SET self.title = ft.Text("Join a group")
+        
+        SET self.group_code_textfield = ft.TextField(
+            label = "Enter 8 digit group code",
+            border_radius = 15,
+            expand = True,
+            height=44,
+            label_style = ft.TextStyle()
+        )
+        
+        SET group_code_textfield_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.MainAxisAlignment.CENTER
+        )
+        ADD group_code_textfield_row.controls TO (self.group_code_textfield)
+        
+        SET self.check_if_exists_button = ft.ElevatedButton(
+            disabled=True,
+            content=ft.Text(
+                value="Verify group code",
+            )
+        )
+        
+        SET check_if_exists_btn_container = ft.Container(
+            content=self.check_if_exists_button,
+            padding=10
+        )
+        SET check_if_exists_row = ft.Row(
+            controls=[check_if_exists_btn_container],
+            alignment=ft.MainAxisAlignment.END
+        )
+        
+        SET self.join_column = ft.Column(
+            controls=[group_code_textfield_row, check_if_exists_row],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET self.image_preview = ft.Image(
+            "/default_image.png",
+            width=160,
+            height=160
+        )
+        
+        SET image_preview_row = ft.Row(
+            controls=[self.image_preview],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET self.image_upload_button = ft.ElevatedButton(
+            height=30,
+            width=160,
+            content=ft.Text(
+                value="Upload image",
+            )
+        )
+        
+        SET image_upload_button_row = ft.Row(
+            controls=[self.image_upload_button],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET image_upload_column = ft.Column(
+            controls=[image_preview_row, image_upload_button_row],
+            spacing=20
+        )
+        
+        SET self.group_name_textfield = ft.TextField(
+            label = "Group Name",
+            border_radius = 15,
+            width=220,
+            height=44,
+            label_style = ft.TextStyle()
+        )
+        
+        SET group_name_textfield_row = ft.Row(
+            controls=[self.group_name_textfield],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET self.group_desc_textfield = ft.TextField(
+            label = "Group Description",
+            border_radius = 15,
+            width = 220,
+            height = 300,
+            multiline=True,
+            min_lines=5,
+            max_lines=5,
+            label_style = ft.TextStyle()
+        )
+        
+        SET group_desc_textfield_row = ft.Row(
+            controls=[self.group_desc_textfield],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+        
+        SET group_information_column = ft.Column(
+            controls=[group_name_textfield_row, group_desc_textfield_row],
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=20
+        )
+        
+        SET self.creation_row = ft.Row(
+            expand=True,
+            controls=[image_upload_column, group_information_column],
+            spacing=18
+        )
+        
+        SET self.switcher = ft.AnimatedSwitcher(
+            content = self.join_column,
+            width = 400,
+            height = 200,
+            transition=ft.AnimatedSwitcherTransition.FADE,
+            duration=300,
+            reverse_duration=300,
+            switch_in_curve=ft.AnimationCurve.LINEAR,
+            switch_out_curve=ft.AnimationCurve.LINEAR,
+        )
+        
+        SET self.join_button = ft.TextButton("Join", disabled = True)
+        SET self.create_new_button = ft.TextButton("Create New")
+        SET self.close_button = ft.TextButton("Cancel")
+        
+        SET self.content = self.switcher
+        SET self.actions = [
+            self.join_button,
+            self.create_new_button,
+            self.close_button
+        ]
+        SET self.actions_alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+       	SET self.on_dismiss=lambda e: print("Modal dialog dismissed!")
+    
+    MODULE get_group_code_entry(self):
+        return self.group_code_textfield.value
+    
+    MODULE get_created_group_name(self):
+        return self.group_name_textfield.value
+    
+    MODULE get_created_group_desc(self):
+        return self.group_desc_textfield.value
+
+    MODULE switch_to_creation(self):
+        SET self.switcher.content = self.creation_row
+        SET self.title.value = "Create new group"
+             
+    MODULE switch_to_joining(self):
+        SET self.switcher.content = self.join_column
+        SET self.title.value = "Join a group"
+    
+    MODULE update_colors(self, colors):
+        SET self.group_code_textfield.border_color = colors["d6d6d6"]
+        SET self.group_code_textfield.cursor_color = colors["black"]
+        SET self.group_code_textfield.bgcolor = colors["d6d6d6"]
+        SET self.group_code_textfield.color = colors["black"]
+        SET self.group_code_textfield.label_style.color = colors["black"]
+        
+        SET self.check_if_exists_button.bgcolor = colors["d6d6d6"]
+        SET self.check_if_exists_button.content.color = colors["ae8948"]
+        
+        SET self.image_upload_button.bgcolor = colors["d6d6d6"]
+        SET self.image_upload_button.content.color = colors["black"]
+        
+        SET self.group_name_textfield.border_color = colors["d6d6d6"]
+	SET self.group_name_textfield.cursor_color = colors["black"]
+        SET self.group_name_textfield.bgcolor = colors["d6d6d6"]
+        SET self.group_name_textfield.color = colors["black"]
+        SET self.group_name_textfield.label_style.color = colors["black"]
+        
+        SET self.group_desc_textfield.border_color = colors["d6d6d6"]
+        SET self.group_desc_textfield.cursor_color = colors["black"]
+        SET self.group_desc_textfield.bgcolor = colors["d6d6d6"]
+        SET self.group_desc_textfield.color = colors["black"]
+        SET self.group_desc_textfield.label_style.color = colors["black"]

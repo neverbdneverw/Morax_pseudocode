@@ -1,0 +1,222 @@
+import flet as ft
+from flet_route import Params, Basket
+
+CREATE ConfirmEmailPage():
+    MODULE __init__(self):
+        SET lock_icon = ft.Image(
+            src = "/lock.svg",
+            width = 200,
+            height = 200
+        )
+        
+        SET image_container = ft.Container(
+            	expand=True,
+		content=lock_icon
+        )
+        
+        SET self.confirm_email_indicator_text = ft.Text(
+            value="Confirm Email",
+            weight=ft.FontWeight.W_700,
+            size=54
+        )
+        
+        SET confirm_email_indicator_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD confirm_email_indicator_row.controls TO (self.confirm_email_indicator_text)
+        
+        SET self.code_sent_indicator_text = ft.Text(
+            value="A code was sent to your email.",
+            size = 24
+        )
+        
+        SET code_sent_indicator_text_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[self.code_sent_indicator_text]
+        )
+        
+        SET self.code_sent_textfield = ft.TextField(
+            label = "Code sent",
+            border_radius = 25,
+            expand=True,
+            label_style = ft.TextStyle()
+        )
+        
+        SET code_sent_textfield_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD code_sent_textfield_row.controls TO (self.code_sent_textfield)
+        
+        SET self.confirm_email_button = ft.ElevatedButton(
+            width = 250,
+            height = 44,
+            disabled=True,
+            content=ft.Text(
+                value="Confirm Email",
+                size=24
+            )
+        )
+        
+        SET confirm_email_btn_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD confirm_email_btn_row.controls TO (self.confirm_email_button)
+        
+        SET confirm_email_btn_container = ft.Container(
+            content=confirm_email_btn_row
+        )
+        
+        SET self.login_indicator_text = ft.Text(
+            value="Already have an account?",
+            weight=ft.FontWeight.W_200,
+            size=16
+        )
+        
+        SET login_indicator_text_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[self.login_indicator_text]
+        )
+        
+        SET self.login_button = ft.ElevatedButton(
+            width = 200,
+            height = 44,
+            content=ft.Text(
+                value="Log in",
+                size=24
+            )
+        )
+        
+        SET login_btn_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD login_btn_row.controls TO (self.login_button)
+        
+        SET login_btn_container = ft.Container(
+            content=login_btn_row
+        )
+        
+        SET sidebar_column_top = ft.Column(
+            spacing=20,
+            controls = [
+                confirm_email_indicator_row,
+                code_sent_indicator_text_row,
+                code_sent_textfield_row,
+                confirm_email_btn_container
+            ]
+        )
+        
+        SET sidebar_column_bottom = ft.Column(
+            spacing=20,
+            alignment=ft.alignment.bottom_center,
+            controls = [
+                login_indicator_text_row,
+                login_btn_container
+            ]
+        )
+        
+        SET sidebar_main_column = ft.Column(
+            controls=[sidebar_column_top,sidebar_column_bottom],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        )
+        
+        SET self.sidebar_container = ft.Container(
+            expand = True,
+            content = sidebar_main_column,
+            padding = 40,
+        )
+        
+        SET main_row = ft.Row(
+            expand=True,
+            controls = [
+                image_container,
+                self.sidebar_container
+            ]
+        )
+        
+        SET self.main_container = ft.Container(
+            expand=True,
+            content=main_row,
+            gradient=ft.LinearGradient(
+                begin=ft.alignment.center_left,
+                end=ft.alignment.center_right,
+                colors=[
+                    "#9a6e32",
+                    "#c7ac65",
+                    "#c7ac65",
+                    "#c7ac65"
+                ]
+            )
+        )
+        
+        SET self.route_address = "/confirm_email"
+        SET self.view = ft.View(
+            route=self.route_address,
+            padding = 0,
+            controls = [self.main_container]
+        )
+        
+        SET self.dialog_text = ft.Text(
+            size=12
+        )
+        
+        SET self.warning_dialog = ft.AlertDialog(
+            title=ft.Text(
+                value="Can't Register",
+                size=20
+            ),
+            content=self.dialog_text
+        )
+    
+    MODULE get_view(self, page: ft.Page, params: Params, basket: Basket):
+        SET self.basket = basket
+        SET self.page = page
+        return self.view
+    
+    MODULE get_code_input(self):
+        return self.code_sent_textfield.value
+    
+    MODULE allow_confirm(self, allow: bool):
+        SET self.confirm_email_button.disabled = (allow == False)
+        CALL self.page.update()
+    
+    MODULE display_on_dialog(self, title: str, message: str):
+        SET self.warning_dialog.title.value = title
+        SET self.dialog_text.value = message
+        SET self.page.dialog = self.warning_dialog
+        SET self.warning_dialog.open = True
+        CALL self.page.update()
+    
+    MODULE update_colors(self, colors):
+        SET self.confirm_email_indicator_text.color = colors["black"]
+        SET self.code_sent_indicator_text.color = colors["black"]
+        
+        SET self.code_sent_textfield.border_color = colors["d6d6d6"]
+        SET self.code_sent_textfield.cursor_color = colors["black"]
+        SET self.code_sent_textfield.bgcolor = colors["d6d6d6"]
+        SET self.code_sent_textfield.color = colors["black"]
+        SET self.code_sent_textfield.label_style.color = colors["black"]
+        
+        SET self.confirm_email_button.bgcolor = colors["d6d6d6"]
+        SET self.confirm_email_button.content.color = colors["ae8948"]
+        
+        SET self.login_indicator_text.color = colors["black"]
+        
+        SET self.login_button.bgcolor = colors["d6d6d6"]
+        SET self.login_button.content.color = colors["ae8948"]
+        
+        SET self.sidebar_container.bgcolor = colors["fafafa"]
+        
+        SET self.main_container.gradient.colors=[
+            colors["9a6e32"],
+            colors["c7ac65"],
+            colors["c7ac65"],
+            colors["c7ac65"]
+        ]
+        
+        SET self.view.bgcolor = colors["9a6e32"]

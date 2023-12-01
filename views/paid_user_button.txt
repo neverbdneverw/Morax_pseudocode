@@ -1,0 +1,34 @@
+IMPORT flet AS ft
+
+CREATE class PaidUserButton(ft.Container)
+    MODULE __init__(self, email: str)
+        SUPER().__init__()
+        SET image = ft.Image("/empty_user_image.svg", width=36, height=36)
+        SET user_label = ft.Text(
+            email
+        )
+
+        SET self.reject_button = ft.IconButton(
+            ft.icons.REMOVE_CIRCLE_OUTLINE
+        )
+
+        SET self.show_proof_button = ft.Container(
+            ft.Row(
+                [image, user_label]
+            )
+        )
+
+        SET row = ft.Row(
+            controls=[self.show_proof_button, self.reject_button],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        )
+        
+        SET self.content = row
+        SET self.padding = 10
+        SET self.border_radius = 15,
+        SET self.tooltip = "Show proof of payment"
+    
+    MODULE update_colors(self, colors)
+        SET self.reject_button.icon_color = colors["ae8948"]
+        SET self.bgcolor = colors["white"]
+END

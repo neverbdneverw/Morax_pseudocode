@@ -1,0 +1,283 @@
+START
+IMPORT flet AS ft
+FROM flet_route IMPORT Params, Basket
+
+CREATE class LoginPage()
+    MODULE __init__(self)
+        SET lock_icon = ft.Image(
+            src = "/lock.svg",
+            width = 200,
+            height = 200
+        )
+        
+        SET image_container = ft.Container(
+            expand=True,
+            content=lock_icon
+        )
+        
+        SET self.login_indicator_text = ft.Text(
+            value="Log in",
+            weight=ft.FontWeight.W_700,
+            size=54
+        )
+        
+        SET login_indicator_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD login_indicator_row.controls.append TO (self.login_indicator_text)
+        
+        SET self.welcome_back_text = ft.Text(
+            "Welcome back user",
+            size = 24
+        )
+        
+        SET welcome_back_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD welcome_back_row.controls.append TO (self.welcome_back_text)
+        
+        SET self.email_textfield = ft.TextField(
+            label = "Email",
+            border_radius = 25,
+            expand=True,
+            label_style = ft.TextStyle()
+        )
+        
+        SET email_textfield_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD email_textfield_row.controls.append TO (self.email_textfield)
+        
+        SET self.password_textfield = ft.TextField(
+            label = "Password",
+            border_radius = 25,
+            expand=True,
+            password=True,
+            can_reveal_password=True,
+            label_style = ft.TextStyle()
+        )
+        
+        SET password_textfield_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD password_textfield_row.controls.append TO (self.password_textfield)
+        
+        SET self.keep_logged_check = ft.Checkbox(
+            value=False
+        )
+        
+        SET keep_logged_indicator_text = ft.Text(
+            value="Keep me signed in",
+            expand=True
+        )
+        
+        SET self.forgot_password_text = ft.Text(
+            "Forgot Password?"
+        )
+        
+        SET self.forgot_password_btn = ft.Container(
+            content=self.forgot_password_text
+        )
+        
+        SET keep_logged_check_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[self.keep_logged_check, keep_logged_indicator_text, self.forgot_password_btn]
+        )
+        
+        SET self.login_btn = ft.ElevatedButton(
+            width = 200,
+            height = 44,
+            disabled=True,
+            content=ft.Text(
+                value="Log in",
+                size=24
+            )
+        )
+        
+        SET login_btn_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD login_btn_row.controls.append TO (self.login_btn)
+        
+        SET login_btn_container = ft.Container(
+            content=login_btn_row,
+            margin=20
+        )
+        
+        SET self.signup_indicator_text = ft.Text(
+            value="Don't have an account yet?",
+            weight=ft.FontWeight.W_200,
+            size=16
+        )
+        
+        SET signup_indicator_text_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[self.signup_indicator_text]
+        )
+        
+        SET self.signup_button = ft.ElevatedButton(
+            width = 200,
+            height = 44,
+            content=ft.Text(
+                value="Sign up",
+                size=24
+            )
+        )
+        
+        SET signup_btn_row = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        ADD signup_btn_row.controls.append TO (self.signup_button)
+        
+        SET signup_btn_container = ft.Container(
+            content=signup_btn_row
+        )
+        
+        SET sidebar_column_top = ft.Column(
+            spacing=20,
+            controls = [
+                login_indicator_row,
+                welcome_back_row,
+                email_textfield_row,
+                password_textfield_row,
+                keep_logged_check_row,
+                login_btn_container,
+            ]
+        )
+        
+        SET sidebar_column_bottom = ft.Column(
+            spacing=20,
+            alignment=ft.alignment.bottom_center,
+            controls = [
+                signup_indicator_text_row,
+                signup_btn_container
+            ]
+        )
+        
+        SET sidebar_main_column = ft.Column(
+            controls=[sidebar_column_top,sidebar_column_bottom],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        )
+        
+        SET self.sidebar_container = ft.Container(
+            expand = True,
+            content = sidebar_main_column,
+            padding = 40
+        )
+        
+        SET main_row = ft.Row(
+            expand=True,
+            controls = [
+                image_container,
+                self.sidebar_container
+            ]
+        )
+        
+        SET self.main_container = ft.Container(
+            expand=True,
+            content=main_row,
+            gradient=ft.LinearGradient(
+                begin=ft.alignment.center_left,
+                end=ft.alignment.center_right,
+                colors=[
+                    "#9a6e32",
+                    "#c7ac65",
+                    "#c7ac65",
+                    "#c7ac65"
+                ]
+            )
+        )
+        
+        SET self.route_address = "/login"
+        SET self.view = ft.View(
+            route=self.route_address,
+            padding = 0,
+            controls = [self.main_container]
+        )
+        
+        ###### DIALOGS ######
+        self.dialog_text = ft.Text(
+            size=12
+        )
+        
+        SET self.warning_dialog = ft.AlertDialog(
+            title=ft.Text(
+                value="Can't Log in.",
+                size=20
+            ),
+            content=self.dialog_text
+        )
+    
+    MODULE get_view(self, page: ft.Page, params: Params, basket: Basket)
+        SET self.basket = basket
+        SET self.page = page
+        RETURN self.view
+    
+    MODULE get_keep_signed_in(self)
+        RETURN self.keep_logged_check.value
+    
+    MODULE get_email_entry(self)
+        RETURN self.email_textfield.value
+    
+   MODULEf get_password_entry(self)
+        RETURN self.password_textfield.value
+    
+    MODULE allow_login(self, allow: bool)
+        SET self.login_btn.disabled = (allow == False)
+        ADD self.page.update()
+    
+    MODULE display_on_dialog(self, message: str)
+        SET self.dialog_text.value = message
+        SET self.page.dialog = self.warning_dialog
+        SET self.warning_dialog.open = True
+        ADD self.page.update()
+    
+    MODULE update_colors(self, colors)
+        SET self.login_indicator_text.color = colors["black"]
+        
+        SET self.welcome_back_text.color = colors["black"]
+        
+        SET self.email_textfield.border_color = colors["d6d6d6"]
+        SET self.email_textfield.cursor_color = colors["black"]
+        SET self.email_textfield.bgcolor = colors["d6d6d6"]
+        SET self.email_textfield.color = colors["black"]
+        SET self.email_textfield.label_style.color = colors["black"]
+        
+        SET self.password_textfield.border_color = colors["d6d6d6"]
+        SET self.password_textfield.cursor_color = colors["black"]
+        SET self.password_textfield.bgcolor = colors["d6d6d6"]
+        SET self.password_textfield.color = colors["black"]
+        SET self.password_textfield.label_style.color = colors["black"]
+        
+        SET self.keep_logged_check.fill_color = colors["d6d6d6"]
+        SET self.keep_logged_check.check_color = colors["ae8948"]
+        
+        SET self.forgot_password_text.color = colors["9a6e32"]
+        
+        SET self.login_btn.bgcolor = colors["d6d6d6"]
+        SET self.login_btn.content.color = colors["ae8948"]
+        
+        SET self.signup_indicator_text.color = colors["black"]
+        
+        SET self.signup_button.bgcolor = colors["d6d6d6"]
+        SET self.signup_button.content.color = colors["ae8948"]
+        
+        SET self.sidebar_container.bgcolor = colors["fafafa"]
+        
+        CREATE LIST self.main_container.gradient.colors = [
+            colors["9a6e32"],
+            colors["c7ac65"],
+            colors["c7ac65"],
+            colors["c7ac65"]
+        ]
+        
+        SET self.view.bgcolor = colors["9a6e32"]
+END

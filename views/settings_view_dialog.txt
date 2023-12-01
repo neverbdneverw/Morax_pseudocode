@@ -1,0 +1,110 @@
+START
+IMPORT flet AS ft
+
+CREATE class AppearanceDialog(ft.AlertDialog)
+    MODULE __init__(self)
+        SUPER().__init__()
+        SET title = ft.Text("Appearance", weight=ft.FontWeight.BOLD)
+        SET self.subtitle = ft.Text("Customize the app's visual style and layout to suit your preferences.", size=12)
+        
+        SET title_column = ft.Column(
+            controls = [title, self.subtitle]
+        )
+        
+        SET self.title = title_column
+        
+        SET dark_mode_text = ft.Text("Dark Mode", weight=ft.FontWeight.W_700)
+        ADD self.dark_mode_switch = ft.Switch()
+        
+        SET dark_mode_row = ft.Row(
+            controls=[dark_mode_text, self.dark_mode_switch],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+        )
+        
+        SET self.content = dark_mode_row
+        
+        MODULE close(event: ft.ControlEvent)
+            SET self.open = False
+            ADD self.page.update()
+        
+        SET close_button = ft.TextButton("Close")
+        SET close_button.on_click = close
+        
+        SET self.actions = [close_button]
+        SET self.actions_alignment = ft.MainAxisAlignment.END
+        
+        SET self.dark_mode_switch.on_change = lambda e: self.on_change(e)
+    
+    MODULE on_change(self, event)
+        PASS
+    
+    MODULE update_colors(self, colors)
+        SET self.subtitle.color = colors["a6a6a6"]
+        
+CREATE class CurrencyDialog(ft.AlertDialog)
+    MODULE __init__(self)
+        SUPER().__init__()
+        SET title = ft.Text("Currency", weight=ft.FontWeight.BOLD)
+        SET self.subtitle = ft.Text("Please be cautious when changing the app's currency, as this action may result in potential pricing and conversion issues for your transactions.", width=400, size=12)
+        
+        SET title_column = ft.Column(
+            controls = [title, self.subtitle]
+        )
+        
+        SET self.title = title_column
+        
+        SET self.currency_choices = ft.RadioGroup(
+            content=ft.Row([
+                ChoiceButton("PHP", "ph.png"),
+                ChoiceButton("USD", "usa.png"),
+                ChoiceButton("EU", "eu.png")
+            ], alignment=ft.MainAxisAlignment.CENTER, vertical_alignment=ft.CrossAxisAlignment.START, height=100, spacing=50),
+        )
+        
+        SET self.content = self.currency_choices
+        
+        MODULE close(event: ft.ControlEvent)
+            SET self.open = False
+            ADD self.page.update()
+        
+        SET close_button = ft.TextButton("Close")
+        SET close_button.on_click = close
+        
+        SET self.actions = [close_button]
+        SET self.actions_alignment = ft.MainAxisAlignment.END
+        SET self.currency_choices.on_change = lambda event: self.on_change(self.currency_choices.value)
+    
+    MODULE on_change(self, currency)
+        PASS
+    
+    MODULE update_colors(self, colors)
+        SET self.subtitle.color = colors["a6a6a6"]
+
+CREATE class ChoiceButton(ft.Column)
+    MODULE __init__(self, label: str, source: str)
+        SUPER().__init__()
+        
+        SET supporting_image = ft.Container(
+            ft.Image(
+                "/" + source,
+                width=50,
+                height=50,
+                fit=ft.ImageFit.FILL
+            ),
+            border_radius=5
+        )
+        
+        SET button_name = ft.Text(
+            label,
+            weight=ft.FontWeight.W_400
+        )
+        
+        SET self.controls = [
+            ft.Radio(value=label),
+            supporting_image,
+            button_name
+        ]
+        
+        SET self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        SET self.spacing = 10
+END

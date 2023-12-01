@@ -1,0 +1,122 @@
+START
+IMPORT flet AS ft
+FROM views.settings_view_dialogs IMPORT *
+
+CREATE class SettingsView(ft.Column)
+    MODULE __init__(self)
+        SUPER().__init__(
+            offset=ft.transform.Offset(0, 1.5),
+            animate_offset=ft.animation.Animation(300)
+        )
+        
+        SET self.top_text = ft.Text(
+            expand=True,
+            value="Settings",
+            weight=ft.FontWeight.W_600,
+            size=54
+        )
+        
+        SET top_text_row = ft.Row(
+            expand=True,
+            controls=[self.top_text]
+        )
+        
+        SET self.top_text_container = ft.Container(
+            padding=ft.padding.only(30, 30, 30, 0),
+            content=top_text_row
+        )
+        
+        SET self.appearance_setting = SettingButton("Appearance", "Customize the app's visual style and layout to suit your preferences", "")
+        SET self.currency_setting = SettingButton("Currency", "Adjust the currency settings to specify your preferred currency for transactions and display.", "Currently set to: P")
+        
+        SET setting_list = ft.Column(
+            controls=[
+                self.appearance_setting,
+                self.currency_setting,
+            ]
+        )
+        
+        SET self.setting_container = ft.Container(
+            setting_list,
+            border_radius=15,
+            margin=30,
+            padding=ft.padding.only(0, 40, 0, 40)
+        )
+        
+        ADD self.controls.append TO (self.top_text_container)
+        ADD self.controls.append TO (self.setting_container)
+    
+    MODULE show(self, delta)
+        SET self.offset = ft.transform.Offset(0, delta)
+        ADD self.update()
+    
+    MODULE update_colors(self, colors)
+        SET self.top_text.color = colors["black"]
+        SET self.setting_container.bgcolor = colors["ebebeb"]
+        ADD self.appearance_setting.update_colors TO (colors)
+        ADD self.currency_setting.update_colors TO (colors)
+        
+        SET self.appearance_setting.on_hover = lambda e: self.change_color(e, colors)
+        SET self.currency_setting.on_hover = lambda e: self.change_color(e, colors)
+        
+    MODULE change_color(self, event: ft.ControlEvent, colors)
+        SET self.bgcolor = colors["d6d6d6"] if event.data == "true" else colors["fcffff"]
+        ADD self.update()
+
+CREATE class SettingButton(ft.Container)
+    MODULE __init__(self, setting_name: str, setting_description: str, additonal_state: str)
+        SUPER().__init__()
+        
+        SET self.setting_name = ft.Text(
+            setting_name,
+            size=24,
+            weight=ft.FontWeight.W_700
+        )
+        
+        SET self.setting_with_current = ft.Text(
+            additonal_state,
+            italic=True,
+        )
+        
+        SET setting_title_row = ft.Row(
+            [self.setting_name]
+        )
+        
+        IF additonal_state THEN
+            ADD setting_title_row.controls.append(self.setting_with_current)
+        
+        SET self.setting_description = ft.Text(
+            setting_description,
+            size=14,
+            expand=True
+        )
+        
+        SET self.setting_icon = ft.Icon(
+            ft.icons.MORE_HORIZ
+        )
+        
+        SET bottom_row = ft.Row(
+            controls=[self.setting_description]
+        )
+        
+        ADD bottom_row.controls.append TO (self.setting_icon)
+        
+        SET main_column = ft.Column(
+            controls=[
+                setting_title_row,
+                bottom_row
+            ],
+            spacing=10
+        )
+        
+        SET self.content = main_column
+        SET self.padding = 20
+        SET self.margin = ft.margin.only(40, 0, 40, 0)
+        SET self.border_radius = 15
+    
+    MODULE update_colors(self, colors)
+        SET self.colors = colors
+        SET self.setting_with_current.color = colors["a6a6a6"]
+        SET self.setting_description.color = colors["a6a6a6"]
+        SET self.bgcolor = colors["fcffff"]
+END

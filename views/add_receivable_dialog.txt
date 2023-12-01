@@ -1,0 +1,161 @@
+import flet as ft
+
+CREATE AddReceivableDialog(ft.AlertDialog):
+    MODULE __init__(self):
+        super().__init__()
+        SET self.group = ""
+        
+        SET self.add_item_button = ft.TextButton("Add Item", disabled=True)
+        SET self.cancel_button = ft.TextButton("Cancel")
+        
+        SET self.actions = [
+            self.add_item_button,
+            self.cancel_button
+        ]
+        SET self.actions_alignment = ft.MainAxisAlignment.SPACE_BETWEEN 
+        
+        SET self.item_image = ft.Image(
+            "/default_image.png",
+            width = 250,
+            height = 250
+        )
+        
+        SET self.choose_button = ft.ElevatedButton(
+            height=44,
+            width=160,
+            content=ft.Text(
+                value="Upload image",
+            )
+        )
+        
+        SET image_upload_column = ft.Column(
+            controls=[self.item_image, self.choose_button],
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
+        
+        SET self.item_name_textfield = ft.TextField(
+            label = "Item name",
+            border_radius = 15,
+            width=230,
+            height=44,
+            label_style = ft.TextStyle()
+        )
+        
+        SET self.item_month_textfield = ft.TextField(
+            label = "Month",
+            border_radius = 15,
+            width=85,
+            height=44,
+            label_style = ft.TextStyle()
+        )
+        
+        SET self.item_day_textfield = ft.TextField(
+            label = "Day",
+            border_radius = 15,
+            width=60,
+            height=44,
+            label_style = ft.TextStyle()
+        )
+        
+        SET self.item_year_textfield = ft.TextField(
+            label = "Year",
+            border_radius = 15,
+            width=65,
+            height=44,
+            label_style = ft.TextStyle()
+        )
+        
+        SET item_date_row = ft.Row(
+            controls=[self.item_month_textfield, self.item_day_textfield, self.item_year_textfield],
+            spacing=10
+        )
+        
+        SET self.item_amount_textfield = ft.TextField(
+            label = "Amount",
+            border_radius = 15,
+            width=230,
+            height=44,
+            label_style = ft.TextStyle()
+        )
+        
+        SET self.item_description_textfield = ft.TextField(
+            label = "Description",
+            border_radius = 15,
+            width = 230,
+            height = 300,
+            multiline=True,
+            min_lines=5,
+            max_lines=5,
+            label_style = ft.TextStyle()
+        )
+        
+        SET info_column = ft.Column(
+            controls=[self.item_name_textfield, item_date_row, self.item_amount_textfield, self.item_description_textfield]
+        )
+        
+        SET main_row = ft.Row(
+            controls=[image_upload_column, info_column],
+            width = 500,
+            height = 300,
+        )
+        
+        self.content = main_row
+        self.modal = False
+    
+    MODULE get_item_name(self):
+        return self.item_name_textfield.value
+    
+    MODULE get_item_creation_month(self):
+        return self.item_month_textfield.value
+    
+    MODULE get_item_creation_day(self):
+        return self.item_day_textfield.value
+    
+    MODULE get_item_creation_year(self):
+        return self.item_year_textfield.value
+    
+    MODULE get_item_amount(self):
+        return self.item_amount_textfield.value
+    
+    MODULE get_item_description(self):
+        return self.item_description_textfield.value
+    
+    MODULE update_colors(self, colors):
+        SET self.choose_button.bgcolor = colors["d6d6d6"]
+        SET self.choose_button.content.color = colors["black"]
+        
+        SET self.item_name_textfield.border_color = colors["d6d6d6"]
+	SET self.item_name_textfield.cursor_color = colors["black"]
+        SET self.item_name_textfield.bgcolor = colors["d6d6d6"]
+        SET self.item_name_textfield.color = colors["black"]
+        SET self.item_name_textfield.label_style.color = colors["black"]
+        
+        SET self.item_month_textfield.border_color = colors["d6d6d6"]
+        SET self.item_month_textfield.cursor_color = colors["black"]
+        SET self.item_month_textfield.bgcolor = colors["d6d6d6"]
+        SET self.item_month_textfield.color = colors["black"]
+        SET self.item_month_textfield.label_style.color = colors["black"]
+        
+        SET self.item_day_textfield.border_color = colors["d6d6d6"]
+        SET self.item_day_textfield.cursor_color = colors["black"]
+	SET self.item_day_textfield.bgcolor = colors["d6d6d6"]
+        SET self.item_day_textfield.color = colors["black"]
+        SET self.item_day_textfield.label_style.color = colors["black"]
+        
+        SET self.item_year_textfield.border_color = colors["d6d6d6"]
+        SET self.item_year_textfield.cursor_color = colors["black"]
+	SET self.item_year_textfield.bgcolor = colors["d6d6d6"]
+        SET self.item_year_textfield.color = colors["black"]
+        SET self.item_year_textfield.label_style.color = colors["black"]
+        
+        SET self.item_amount_textfield.border_color = colors["d6d6d6"]
+        SET self.item_amount_textfield.cursor_color = colors["black"]
+        SET self.item_amount_textfield.bgcolor = colors["d6d6d6"]
+        SET self.item_amount_textfield.color = colors["black"]
+        SET self.item_amount_textfield.label_style.color = colors["black"]
+        
+        SET self.item_description_textfield.border_color = colors["d6d6d6"]
+        SET self.item_description_textfield.cursor_color = colors["black"]
+	SET self.item_description_textfield.bgcolor = colors["d6d6d6"]
+        SET self.item_description_textfield.color = colors["black"]
+        SET self.item_description_textfield.label_style.color = colors["black"]
