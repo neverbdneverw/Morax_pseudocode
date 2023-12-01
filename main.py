@@ -71,21 +71,21 @@ MODULE main(page: ft.Page)
     
     SET model =  Model()
 
-   	Call HomeController(page, model, home_page)
-    	Call AddDialogController(page, model, home_page)
-    	Call ItemInfoDialogController(page, model, home_page)
-    	Call AddReceivableDialogController(page, model, home_page)
-    	Call AccountSettingsDialogsController(page, model, home_page)
-    	Call ReceivableInfoDialogController(page, model, home_page)
-    	Call OpeningController(page, model, opening_page)
-    	Call OnboardingController(page, model, onboarding_page)
-   	Call LoginController(page, model, login_page)
-    	Call SignupController(page, model, signup_page)
-    	Call ForgotController(page, model, forgot_password_page)
-    	Call ConfirmEmailController(page, model, confirm_email_page)
+   	CALL HomeController(page, model, home_page)
+    	CALL AddDialogController(page, model, home_page)
+    	CALL ItemInfoDialogController(page, model, home_page)
+    	CALL AddReceivableDialogController(page, model, home_page)
+    	CALL AccountSettingsDialogsController(page, model, home_page)
+    	CALL ReceivableInfoDialogController(page, model, home_page)
+    	CALL OpeningController(page, model, opening_page)
+    	CALL OnboardingController(page, model, onboarding_page)
+   	CALL LoginController(page, model, login_page)
+    	CALL SignupController(page, model, signup_page)
+    	CALL ForgotController(page, model, forgot_password_page)
+    	CALL ConfirmEmailController(page, model, confirm_email_page)
 
 IF __name__ == "__main__" THEN
-    Call  ft.app(
+    CALL  ft.app(
         target=main,
         assets_dir="assets"
     )
