@@ -1,24 +1,27 @@
-import flet as ft
+IMPORT flet AS ft
 
-from flet_route import Routing, path
-from views import *
-from controllers import *
-from model import  *
+FROM flet_route IMPORT Routing, path
+FROM views IMPORT *
+FROM controllers IMPORT *
+FROM models IMPORT  *
+FROM repository IMPORT *
 
-CREATE RouteManager(Routing):
-    MODULE route_changed(self, route):
+CREATE RouteManager(Routing)
+    MODULE route_changed(self, route)
         pass
     
-    MODULE change_route(self, route):
+    MODULE change_route(self, route)
         CALL route_changed(route)
-        super().change_route(route)
-MODULE main(page: ft.Page):
+        SUPER().change_route(route)
+
+MODULE main(page: ft.Page)
 	SET page.window_width = 1024
 	SET page.window_height = 768
 	SET page.title = "Morax"
-if bool(page.client_storage.get("dark_mode")):
+
+    IF bool(page.client_storage.get("dark_mode")) THEN
         SET page.theme_mode = ft.ThemeMode.DARK
-    else:
+    ELSE
         SET page.theme_mode = ft.ThemeMode.LIGHT
     
     SET colors = get_colors(page.client_storage.get("dark_mode"))
@@ -33,7 +36,7 @@ if bool(page.client_storage.get("dark_mode")):
 	
 	SET main_pages = [confirm_email_page, opening_page, signup_page, login_page, forgot_password_page, onboarding_page, 		home_page]
 
-    SET app_routes = [
+    CREATE LIST app_routes = [
        	 path(url="/", clear=True, view=opening_page.get_view),
        	 path(url="/login", clear=True, view=login_page.get_view),
          path(url="/signup", clear=True, view=signup_page.get_view), 
@@ -45,11 +48,11 @@ if bool(page.client_storage.get("dark_mode")):
     
     	CALL Routing(page = page, app_routes = app_routes)
    	CALL page.go(page.route)
-	MODULE handle_route_changed(event: ft.RouteChangeEvent):
-       	 for current in main_pages:
-            if current.route_address == event.route:
+	MODULE handle_route_changed(event: ft.RouteChangeEvent)
+       	 FOR current in main_pages
+            IF current.route_address == event.route THEN
                 current.update_colors(colors)
-                break
+                BREAK
 
     	CALL routing.route_changed = handle_route_changed
     
@@ -60,9 +63,9 @@ if bool(page.client_storage.get("dark_mode")):
 
     
  
-    if page.client_storage.get("currency") is None:
+    IF page.client_storage.get("currency") is None THEN
         SET page.client_storage TO ("currency", "PHP")
-    if page.client_storage.get("dark_mode") is None:
+    IF page.client_storage.get("dark_mode") is None THEN
         SET page.client_storage TO ("dark_mode", "False")
     
     SET model =  Model()
@@ -80,7 +83,7 @@ if bool(page.client_storage.get("dark_mode")):
     	Call ForgotController(page, model, forgot_password_page)
     	Call ConfirmEmailController(page, model, confirm_email_page)
 
-if __name__ == "__main__":
+IF __name__ == "__main__" THEN
     Call  ft.app(
         target=main,
         assets_dir="assets"
