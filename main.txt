@@ -1,0 +1,54 @@
+import flet as ft
+
+from flet_route import Routing, path
+from views import *
+from controllers import *
+from model import  *
+
+module main(page: ft.Page):
+	SET page.window_width = 1024
+	SET page.window_height = 768
+	SET page.theme_mode = ft.ThemeMode.LIGHT
+	SET page.title = "Morax"
+
+	SET confirm_email_page = ConfirmEmailPage()
+	SET opening_page =  OpeningPage()
+	SET signup_page = SignupPage()
+	SET login_page =  LoginPage()
+	SET forgot_password_page = ForgotPasswordPage()
+	SET onboarding_page =  OnboardingPage()
+
+	SET home_page = call HomePage()
+
+    SET app_routes = [
+       	 path(url="/", clear=True, view=opening_page.get_view),
+       	 path(url="/login", clear=True, view=login_page.get_view),
+         path(url="/signup", clear=True, view=signup_page.get_view), 
+         path(url="/forgot_password", clear=True, view=forgot_password_page.get_view),
+         path(url="/confirm_email", clear=True, view=confirm_email_page.get_view),
+         path(url="/home", clear=True, view=home_page.get_view),
+         path(url="/onboarding", clear=False, view=onboarding_page.get_view)
+    ]
+    
+    Call Routing(page = page, app_routes = app_routes)
+    Call page.go(page.route)
+    
+    SET model =  Model()
+
+   	Call HomeController(page, model, home_page)
+    	Call AddDialogController(page, model, home_page)
+    	Call ItemInfoDialogController(page, model, home_page)
+    	Call AddReceivableDialogController(page, model, home_page)
+    	Call AccountSettingsDialogsController(page, model, home_page)
+    	Call ReceivableInfoDialogController(page, model, home_page)
+    	Call OpeningController(page, model, opening_page)
+    	Call OnboardingController(page, model, onboarding_page)
+   	Call LoginController(page, model, login_page)
+    	Call SignupController(page, model, signup_page)
+    	Call ForgotController(page, model, forgot_password_page)
+    	Call ConfirmEmailController(page, model, confirm_email_page)
+
+if __name__ == "__main__":
+    Call ft.app(target=main)
+
+
