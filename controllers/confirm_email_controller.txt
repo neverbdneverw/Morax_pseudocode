@@ -1,3 +1,4 @@
+START
 FROM models IMPORT User
 FROM repository IMPORT Repository
 FROM views IMPORT ConfirmEmailPage
