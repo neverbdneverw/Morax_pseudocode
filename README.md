@@ -1,2 +1,2 @@
 # Morax_pseudocode
-Pseudo
+Simplified code of Morax 
