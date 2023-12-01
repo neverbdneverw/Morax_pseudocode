@@ -5,20 +5,33 @@ from views import *
 from controllers import *
 from model import  *
 
-module main(page: ft.Page):
+CREATE RouteManager(Routing):
+    MODULE route_changed(self, route):
+        pass
+    
+    MODULE change_route(self, route):
+        CALL route_changed(route)
+        super().change_route(route)
+MODULE main(page: ft.Page):
 	SET page.window_width = 1024
 	SET page.window_height = 768
-	SET page.theme_mode = ft.ThemeMode.LIGHT
 	SET page.title = "Morax"
-
+if bool(page.client_storage.get("dark_mode")):
+        SET page.theme_mode = ft.ThemeMode.DARK
+    else:
+        SET page.theme_mode = ft.ThemeMode.LIGHT
+    
+    SET colors = get_colors(page.client_storage.get("dark_mode"))
+	
 	SET confirm_email_page = ConfirmEmailPage()
 	SET opening_page =  OpeningPage()
 	SET signup_page = SignupPage()
 	SET login_page =  LoginPage()
 	SET forgot_password_page = ForgotPasswordPage()
 	SET onboarding_page =  OnboardingPage()
-
 	SET home_page = call HomePage()
+	
+	SET main_pages = [confirm_email_page, opening_page, signup_page, login_page, forgot_password_page, onboarding_page, 		home_page]
 
     SET app_routes = [
        	 path(url="/", clear=True, view=opening_page.get_view),
@@ -30,8 +43,27 @@ module main(page: ft.Page):
          path(url="/onboarding", clear=False, view=onboarding_page.get_view)
     ]
     
-    Call Routing(page = page, app_routes = app_routes)
-    Call page.go(page.route)
+    	CALL Routing(page = page, app_routes = app_routes)
+   	CALL page.go(page.route)
+	MODULE handle_route_changed(event: ft.RouteChangeEvent):
+       	 for current in main_pages:
+            if current.route_address == event.route:
+                current.update_colors(colors)
+                break
+
+    	CALL routing.route_changed = handle_route_changed
+    
+    	CALL opening_page.update_colors(colors)
+
+   	CALL opening_page.update()
+    
+
+    
+ 
+    if page.client_storage.get("currency") is None:
+        SET page.client_storage TO ("currency", "PHP")
+    if page.client_storage.get("dark_mode") is None:
+        SET page.client_storage TO ("dark_mode", "False")
     
     SET model =  Model()
 
@@ -49,6 +81,9 @@ module main(page: ft.Page):
     	Call ConfirmEmailController(page, model, confirm_email_page)
 
 if __name__ == "__main__":
-    Call ft.app(target=main)
+    Call  ft.app(
+        target=main,
+        assets_dir="assets"
+    )
 
 
