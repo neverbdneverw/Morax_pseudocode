@@ -1,3 +1,4 @@
+START
 IMPORT flet AS ft
 
 FROM flet_route IMPORT Routing, path
@@ -89,4 +90,4 @@ IF __name__ == "__main__" THEN
         assets_dir="assets"
     )
 
-
+END
