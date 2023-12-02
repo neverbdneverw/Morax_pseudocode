@@ -53,7 +53,7 @@ MODULE main(page: ft.Page)
 	MODULE handle_route_changed(event: ft.RouteChangeEvent)
        	 FOR current in main_pages
             IF current.route_address == event.route THEN
-                current.update_colors(colors)
+                CALL current.update_colors(colors)
                 BREAK
 
     	CALL routing.route_changed = handle_route_changed
