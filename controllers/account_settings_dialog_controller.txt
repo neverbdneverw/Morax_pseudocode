@@ -74,10 +74,10 @@ CREATE class AccountSettingsDialogsController
     MODULE handle_username_change(self, event: ft.ControlEvent)
         IF self.change_username_dialog.new_username_textfield.value != "" THEN
             SET self.change_username_dialog.save_changes_button.disabled = False
-            ADD self.change_username_dialog.save_changes_button.update()
+            UPDATE self.change_username_dialog.save_changes_button()
         ELSE 
             SET self.change_username_dialog.save_changes_button.disabled = True
-            ADD self.change_username_dialog.save_changes_button.update()
+            UPDATE self.change_username_dialog.save_changes_button()
     
     MODULE handle_password_change(self, event: ft.ControlEvent)
         SET password = self.change_password_dialog.new_password_textfield.value
@@ -85,10 +85,10 @@ CREATE class AccountSettingsDialogsController
         
         IF password != "" and confirm != "" and password == confirm THEN
             SET self.change_password_dialog.save_changes_button.disabled = False
-            ADD self.change_password_dialog.save_changes_button.update()
+            UPDATE self.change_password_dialog.save_changes_button()
         ELSE
             SET self.change_password_dialog.save_changes_button.disabled = True
-            ADD self.change_password_dialog.save_changes_button.update()
+            UPDATE self.change_password_dialog.save_changes_button()
     
     MODULE show_dp_change_dialog(self, event: ft.ControlEvent)
         SET image_string = self.account_view.user_picture.src_base64
@@ -113,11 +113,11 @@ CREATE class AccountSettingsDialogsController
             SET self.change_dp_dialog.user_image.src_base64 = self.dp_image_string
             ADD self.change_dp_dialog.user_image.update()
             SET self.change_dp_dialog.save_changes_button.disabled = False
-            ADD self.change_dp_dialog.save_changes_button.update()
+            UPDATE ADD self.change_dp_dialog.save_changes_button()
         ELSE
             SET self.dp_image_path = ""
             SET self.change_dp_dialog.save_changes_button.disabled = True
-            ADD self.change_dp_dialog.save_changes_button.update()
+            UPDATE self.change_dp_dialog.save_changes_button()
     
     MODULE save_changed_dp(self, event: ft.ControlEvent)
         IF self.dp_image_path != "" THEN
@@ -137,7 +137,7 @@ CREATE class AccountSettingsDialogsController
                     
                     SET self.page.snack_bar = ft.SnackBar(ft.Text("Profile Picture has been changed. Please wait for changes to take effect..."))
                     SET self.page.snack_bar.open = True
-                    ADD self.page.update()
+                    UPDATE self.page()
                     
                     RETURN
     
